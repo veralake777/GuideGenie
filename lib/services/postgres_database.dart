@@ -288,11 +288,10 @@ class PostgresDatabase {
   Future<User?> getUserById(String userId) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT * FROM users WHERE id = @userId
-    ''', substitutionValues: {
-      'userId': userId,
-    });
+    final results = await _connection.execute(
+      Sql.named('SELECT * FROM users WHERE id = @userId'),
+      parameters: {'userId': userId},
+    );
     
     if (results.isEmpty) {
       return null;
@@ -301,11 +300,10 @@ class PostgresDatabase {
     final userData = results.first;
     
     // Get favorite games
-    final favoriteResults = await _connection.query('''
-      SELECT game_id FROM favorite_games WHERE user_id = @userId
-    ''', substitutionValues: {
-      'userId': userId,
-    });
+    final favoriteResults = await _connection.execute(
+      Sql.named('SELECT game_id FROM favorite_games WHERE user_id = @userId'),
+      parameters: {'userId': userId},
+    );
     
     final favoriteGames = favoriteResults.map((row) => row[0] as String).toList();
     
@@ -369,11 +367,10 @@ class PostgresDatabase {
   Future<User?> getUserByEmail(String email) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT * FROM users WHERE email = @email
-    ''', substitutionValues: {
-      'email': email,
-    });
+    final results = await _connection.execute(
+      Sql.named('SELECT * FROM users WHERE email = @email'),
+      parameters: {'email': email},
+    );
     
     if (results.isEmpty) {
       return null;

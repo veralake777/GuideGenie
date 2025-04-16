@@ -380,10 +380,10 @@ packages:
     dependency: "direct main"
     description:
       name: postgres
-      sha256: f8e4f14734d096277f77ed5dddefcbc1ce18f8f7db5b7ff4b5dd6df2d9db2730
+      sha256: "83ba7afb0e778cc1f373e514c6110d323b81dfbaced774d3a7f4a0e21536eb45"
       url: "https://pub.dev"
     source: hosted
-    version: "2.6.4"
+    version: "3.4.8"
   provider:
     dependency: "direct main"
     description:
