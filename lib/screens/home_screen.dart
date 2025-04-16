@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
       genre: 'MOBA',
       imageUrl: 'https://cdn1.epicgames.com/offer/24b9b5e323bc40eea252a10cdd3b2f10/LOL_2560x1440-98749e0d718e82d27a084941939bc9d3',
       rating: 4.7,
-      description: 'A team-based strategy game where two teams of five champions face off to destroy the other's base.',
+      description: 'A team-based strategy game where two teams of five champions face off to destroy the other\'s base.',
     ),
     Game(
       id: '3',
