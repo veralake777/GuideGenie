@@ -5,6 +5,7 @@ import 'package:guide_genie/models/game.dart';
 import 'package:guide_genie/models/post.dart';
 import 'package:guide_genie/models/user.dart';
 import 'package:guide_genie/models/comment.dart';
+import 'dart:io' show Platform;
 
 class PostgresDatabase {
   static final PostgresDatabase _instance = PostgresDatabase._internal();
@@ -12,7 +13,7 @@ class PostgresDatabase {
   
   PostgresDatabase._internal();
   
-  late Pool _connection;
+  late Connection _connection;
   bool _isConnected = false;
   
   Future<void> connect() async {
@@ -51,13 +52,34 @@ class PostgresDatabase {
         print('PostgresDatabase: Using direct PostgreSQL environment variables');
         print('PostgresDatabase: Host: $pgHost, DB: $pgDatabase, User: $pgUser');
         
-        final connectionString = 'postgres://$pgUser:$pgPassword@$pgHost:${pgPort ?? 5432}/${pgDatabase ?? 'postgres'}';
-        _connection = Pool(connectionString);
+        _connection = Connection(
+          host: pgHost,
+          port: int.tryParse(pgPort ?? '') ?? 5432,
+          database: pgDatabase ?? 'postgres',
+          username: pgUser ?? 'postgres',
+          password: pgPassword ?? '',
+        );
       } 
       // If direct variables not available, try using DATABASE_URL
       else if (databaseUrl != null && databaseUrl.isNotEmpty) {
         print('PostgresDatabase: Connecting using DATABASE_URL...');
-        _connection = Pool(databaseUrl);
+        
+        // Parse the database URL manually
+        final uri = Uri.parse(databaseUrl);
+        final userInfo = uri.userInfo.split(':');
+        final username = userInfo[0];
+        final password = userInfo.length > 1 ? userInfo[1] : '';
+        final database = uri.path.replaceFirst('/', '');
+        
+        print('PostgresDatabase: Parsed DATABASE_URL - Host: ${uri.host}, Port: ${uri.port}, DB: $database, User: $username');
+        
+        _connection = Connection(
+          host: uri.host,
+          port: uri.port,
+          database: database,
+          username: username,
+          password: password,
+        );
       } 
       // Fallback to default development values as last resort
       else {
@@ -70,12 +92,19 @@ class PostgresDatabase {
         
         print('PostgresDatabase: Using fallback connection details - Host: $host, Port: $port, DB: $database, User: $username');
         
-        final connectionString = 'postgres://$username:$password@$host:$port/$database';
-        _connection = Pool(connectionString);
+        _connection = Connection(
+          host: host,
+          port: port, 
+          database: database,
+          username: username,
+          password: password,
+        );
       }
       
+      // Open the connection
+      await _connection.open();
       _isConnected = true;
-      print('PostgresDatabase: Connection pool established successfully');
+      print('PostgresDatabase: Connection established successfully');
       
       print('PostgresDatabase: Creating tables if they don\'t exist...');
       await _createTables();
