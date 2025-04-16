@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Genie - Gaming Guides & Tier Lists</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #0A0E1F;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: #240046;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00FFFF;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+            letter-spacing: 1px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: #00FFFF;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+        }
+        
+        .btn-primary {
+            background-color: #FF00FF;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+        }
+        
+        .btn-primary:hover {
+            background-color: #c800c8;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        /* Hero Section */
+        .hero {
+            height: 500px;
+            background: linear-gradient(135deg, #0A1128, #240046, #5A189A);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 255, 255, 0.15) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 255, 0.15) 0%, transparent 30%);
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            padding: 2rem;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #00FFFF, #FF00FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .hero-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            color: #00FFFF;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Games Section */
+        .games-section {
+            padding: 4rem 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #FF00FF;
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::after {
+            content: '';
+            height: 2px;
+            flex-grow: 1;
+            background-image: linear-gradient(to right, #FF00FF, transparent);
+            margin-left: 1rem;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .game-card {
+            background-color: rgba(36, 0, 70, 0.6);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 0, 255, 0.3);
+        }
+        
+        .game-img {
+            height: 180px;
+            width: 100%;
+            object-fit: cover;
+        }
+        
+        .game-content {
+            padding: 1.5rem;
+        }
+        
+        .game-title {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+        
+        .game-genre {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .game-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        
+        .game-rating {
+            display: flex;
+            align-items: center;
+            color: #FFD700;
+        }
+        
+        .game-rating span {
+            margin-left: 5px;
+            color: white;
+        }
+        
+        .view-btn {
+            color: #00FFFF;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .view-btn:hover {
+            color: #FF00FF;
+            text-shadow: 0 0 5px rgba(255, 0, 255, 0.6);
+        }
+        
+        /* Guides Section */
+        .guides-section {
+            padding: 4rem 1rem;
+            background-color: rgba(15, 23, 42, 0.6);
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: 20px;
+            margin-top: 4rem;
+            margin-bottom: 4rem;
+        }
+        
+        .guides-title {
+            color: #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+        }
+        
+        .guides-title::after {
+            background-image: linear-gradient(to right, #00FF00, transparent);
+        }
+        
+        .guide-card {
+            background-color: rgba(12, 28, 56, 0.6);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .guide-card:hover {
+            background-color: rgba(17, 38, 71, 0.8);
+            border: 1px solid rgba(0, 255, 0, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 255, 0, 0.2);
+        }
+        
+        .guide-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .guide-tag {
+            background-color: rgba(0, 255, 0, 0.15);
+            color: #00FF00;
+            font-size: 0.8rem;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        
+        .bookmark-icon {
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .bookmark-icon:hover {
+            color: #00FF00;
+        }
+        
+        .guide-title {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        .guide-desc {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .guide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .guide-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .author-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #00FFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+            color: #0A1128;
+        }
+        
+        .author-name {
+            font-size: 0.9rem;
+        }
+        
+        .guide-stats {
+            display: flex;
+            gap: 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+        
+        .guide-stats div {
+            display: flex;
+            align-items: center;
+        }
+        
+        .guide-stats i {
+            margin-right: 5px;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #080E1E;
+            padding: 3rem 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-logo {
+            color: #00FFFF;
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+        }
+        
+        .footer-desc {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-heading {
+            color: white;
+            margin-bottom: 1.2rem;
+            font-size: 1.2rem;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #00FFFF;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
+        }
+        
+        /* Icons */
+        .icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .icon-controller {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2300FFFF' viewBox='0 0 24 24'%3E%3Cpath d='M21,6H3C1.9,6,1,6.9,1,8v8c0,1.1,0.9,2,2,2h18c1.1,0,2-0.9,2-2V8C23,6.9,22.1,6,21,6z M11,13H8v3H6v-3H3v-2h3V8h2v3h3V13z M15.5,15c-0.83,0-1.5-0.67-1.5-1.5c0-0.83,0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5C17,14.33,16.33,15,15.5,15z M19.5,12c-0.83,0-1.5-0.67-1.5-1.5c0-0.83,0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5C21,11.33,20.33,12,19.5,12z'/%3E%3C/svg%3E");
+        }
+        
+        .icon-star {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFD700' viewBox='0 0 24 24'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+            width: 16px;
+            height: 16px;
+        }
+        
+        .icon-bookmark {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='rgba(255, 255, 255, 0.6)' viewBox='0 0 24 24'%3E%3Cpath d='M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z'/%3E%3C/svg%3E");
+        }
+        
+        .icon-like {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='rgba(255, 255, 255, 0.6)' viewBox='0 0 24 24'%3E%3Cpath d='M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z'/%3E%3C/svg%3E");
+            width: 16px;
+            height: 16px;
+        }
+        
+        .icon-comment {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='rgba(255, 255, 255, 0.6)' viewBox='0 0 24 24'%3E%3Cpath d='M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z'/%3E%3C/svg%3E");
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .guide-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header / Navigation -->
+    <header>
+        <nav>
+            <div class="logo">
+                <i class="icon icon-controller"></i> Guide Genie
+            </div>
+            <div class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">Games</a>
+                <a href="#">Guides</a>
+                <a href="#">Community</a>
+            </div>
+            <button class="btn-primary">Login</button>
+        </nav>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <i class="icon icon-controller" style="font-size: 4rem; color: #00FFFF; margin-bottom: 1rem;"></i>
+            <h1>Level Up Your Game</h1>
+            <p>Access the best tier lists, loadouts, and strategies for all your favorite games in one place. Join our community of gamers and start dominating today!</p>
+            <button class="btn-primary">Get Started</button>
+        </div>
+    </section>
+    
+    <!-- Featured Games Section -->
+    <section class="games-section">
+        <h2 class="section-title">Featured Games</h2>
+        <div class="games-grid">
+            <!-- Game Card 1 -->
+            <div class="game-card">
+                <img src="https://cdn2.unrealengine.com/en-22br-zerobuild-egs-launcher-2560x1440-2560x1440-a6f40c2ccea5.jpg" alt="Fortnite" class="game-img">
+                <div class="game-content">
+                    <h3 class="game-title">Fortnite</h3>
+                    <p class="game-genre">Battle Royale</p>
+                    <div class="game-meta">
+                        <div class="game-rating">
+                            <i class="icon icon-star"></i>
+                            <span>4.8</span>
+                        </div>
+                        <a href="#" class="view-btn">View Guides</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game Card 2 -->
+            <div class="game-card">
+                <img src="https://cdn1.epicgames.com/offer/24b9b5e323bc40eea252a10cdd3b2f10/LOL_2560x1440-98749e0d718e82d27a084941939bc9d3" alt="League of Legends" class="game-img">
+                <div class="game-content">
+                    <h3 class="game-title">League of Legends</h3>
+                    <p class="game-genre">MOBA</p>
+                    <div class="game-meta">
+                        <div class="game-rating">
+                            <i class="icon icon-star"></i>
+                            <span>4.7</span>
+                        </div>
+                        <a href="#" class="view-btn">View Guides</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game Card 3 -->
+            <div class="game-card">
+                <img src="https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt81e8a3e8ac6c05e7/63b8a86598f3080c466a9ae4/Val_Ep6_Homepage_Act1_1920x1080.jpg" alt="Valorant" class="game-img">
+                <div class="game-content">
+                    <h3 class="game-title">Valorant</h3>
+                    <p class="game-genre">Tactical FPS</p>
+                    <div class="game-meta">
+                        <div class="game-rating">
+                            <i class="icon icon-star"></i>
+                            <span>4.9</span>
+                        </div>
+                        <a href="#" class="view-btn">View Guides</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game Card 4 -->
+            <div class="game-card">
+                <img src="https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/blog/hero/mwiii/MWIII-LAUNCH-TACTICS-TOUT.jpg" alt="Call of Duty: Warzone" class="game-img">
+                <div class="game-content">
+                    <h3 class="game-title">Call of Duty: Warzone</h3>
+                    <p class="game-genre">Battle Royale</p>
+                    <div class="game-meta">
+                        <div class="game-rating">
+                            <i class="icon icon-star"></i>
+                            <span>4.6</span>
+                        </div>
+                        <a href="#" class="view-btn">View Guides</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Popular Guides Section -->
+    <section class="guides-section">
+        <h2 class="section-title guides-title">Popular Guides</h2>
+        
+        <!-- Guide Card 1 -->
+        <div class="guide-card">
+            <div class="guide-header">
+                <span class="guide-tag">Tier List</span>
+                <i class="icon icon-bookmark"></i>
+            </div>
+            <h3 class="guide-title">Fortnite Season X Weapon Tier List</h3>
+            <p class="guide-desc">Check out the latest tier rankings for all weapons in Season X! This guide breaks down each weapon by its damage, rarity, and situational effectiveness.</p>
+            <div class="guide-footer">
+                <div class="guide-author">
+                    <div class="author-avatar">J</div>
+                    <span class="author-name">JohnDoe</span>
+                </div>
+                <div class="guide-stats">
+                    <div>
+                        <i class="icon icon-like"></i>
+                        <span>245</span>
+                    </div>
+                    <div>
+                        <i class="icon icon-comment"></i>
+                        <span>38</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Guide Card 2 -->
+        <div class="guide-card">
+            <div class="guide-header">
+                <span class="guide-tag">Strategy</span>
+                <i class="icon icon-bookmark"></i>
+            </div>
+            <h3 class="guide-title">Valorant - Best Agent Combos for Competitive Play</h3>
+            <p class="guide-desc">Learn the most effective agent combinations for competitive play. This guide covers synergies between different agents and optimal team compositions for each map.</p>
+            <div class="guide-footer">
+                <div class="guide-author">
+                    <div class="author-avatar">P</div>
+                    <span class="author-name">ProGamer123</span>
+                </div>
+                <div class="guide-stats">
+                    <div>
+                        <i class="icon icon-like"></i>
+                        <span>189</span>
+                    </div>
+                    <div>
+                        <i class="icon icon-comment"></i>
+                        <span>52</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Guide Card 3 -->
+        <div class="guide-card">
+            <div class="guide-header">
+                <span class="guide-tag">Meta Analysis</span>
+                <i class="icon icon-bookmark"></i>
+            </div>
+            <h3 class="guide-title">League of Legends - S-Tier Champions in Current Meta</h3>
+            <p class="guide-desc">The definitive guide to the most powerful champions in the current meta. Includes detailed analysis of build paths, runes, and matchups for each role.</p>
+            <div class="guide-footer">
+                <div class="guide-author">
+                    <div class="author-avatar">L</div>
+                    <span class="author-name">LeagueExpert</span>
+                </div>
+                <div class="guide-stats">
+                    <div>
+                        <i class="icon icon-like"></i>
+                        <span>312</span>
+                    </div>
+                    <div>
+                        <i class="icon icon-comment"></i>
+                        <span>74</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div>
+                <div class="footer-logo">Guide Genie</div>
+                <p class="footer-desc">Your ultimate gaming companion. Access the best guides, tier lists, and strategies for your favorite games.</p>
+            </div>
+            
+            <div>
+                <h3 class="footer-heading">Games</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Fortnite</a></li>
+                    <li><a href="#">League of Legends</a></li>
+                    <li><a href="#">Valorant</a></li>
+                    <li><a href="#">Call of Duty</a></li>
+                    <li><a href="#">Marvel Rivals</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h3 class="footer-heading">Resources</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Guides</a></li>
+                    <li><a href="#">Tier Lists</a></li>
+                    <li><a href="#">Meta Updates</a></li>
+                    <li><a href="#">Community Posts</a></li>
+                    <li><a href="#">Tutorials</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h3 class="footer-heading">Company</h3>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2025 Guide Genie. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>
