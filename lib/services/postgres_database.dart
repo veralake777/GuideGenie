@@ -609,7 +609,7 @@ class PostgresDatabase {
   Future<List<Game>> getAllGames() async {
     await connect();
     
-    final results = await _connection.query('SELECT id FROM games');
+    final results = await _connection.execute('SELECT id FROM games');
     
     final games = <Game>[];
     for (final row in results) {
@@ -626,9 +626,9 @@ class PostgresDatabase {
   Future<List<Game>> getFeaturedGames() async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT id FROM games WHERE is_featured = TRUE
-    ''');
+    final results = await _connection.execute(
+      Sql.named('SELECT id FROM games WHERE is_featured = TRUE')
+    );
     
     final games = <Game>[];
     for (final row in results) {
@@ -645,58 +645,64 @@ class PostgresDatabase {
   Future<void> updateGamePostCount(String gameId, int count) async {
     await connect();
     
-    await _connection.execute('''
-      UPDATE games
-      SET post_count = @count
-      WHERE id = @id
-    ''', substitutionValues: {
-      'id': gameId,
-      'count': count,
-    });
+    await _connection.execute(
+      Sql.named('''
+        UPDATE games
+        SET post_count = @count
+        WHERE id = @id
+      '''),
+      parameters: {
+        'id': gameId,
+        'count': count,
+      },
+    );
   }
   
   // Post operations
   Future<void> createPost(Post post) async {
     await connect();
     
-    await _connection.execute('''
-      INSERT INTO posts (
-        id, title, content, game_id, game_name, type, author_id,
-        author_name, author_avatar_url, created_at, updated_at,
-        upvotes, downvotes, comment_count, is_featured
-      )
-      VALUES (
-        @id, @title, @content, @gameId, @gameName, @type, @authorId,
-        @authorName, @authorAvatarUrl, @createdAt, @updatedAt,
-        @upvotes, @downvotes, @commentCount, @isFeatured
-      )
-    ''', substitutionValues: {
-      'id': post.id,
-      'title': post.title,
-      'content': post.content,
-      'gameId': post.gameId,
-      'gameName': post.gameName,
-      'type': post.type,
-      'authorId': post.authorId,
-      'authorName': post.authorName,
-      'authorAvatarUrl': post.authorAvatarUrl,
-      'createdAt': post.createdAt.toIso8601String(),
-      'updatedAt': post.updatedAt.toIso8601String(),
-      'upvotes': post.upvotes,
-      'downvotes': post.downvotes,
-      'commentCount': post.commentCount,
-      'isFeatured': post.isFeatured,
-    });
+    await _connection.execute(
+      Sql.named('''
+        INSERT INTO posts (
+          id, title, content, game_id, game_name, type, author_id,
+          author_name, author_avatar_url, created_at, updated_at,
+          upvotes, downvotes, comment_count, is_featured
+        )
+        VALUES (
+          @id, @title, @content, @gameId, @gameName, @type, @authorId,
+          @authorName, @authorAvatarUrl, @createdAt, @updatedAt,
+          @upvotes, @downvotes, @commentCount, @isFeatured
+        )
+      '''),
+      parameters: {
+        'id': post.id,
+        'title': post.title,
+        'content': post.content,
+        'gameId': post.gameId,
+        'gameName': post.gameName,
+        'type': post.type,
+        'authorId': post.authorId,
+        'authorName': post.authorName,
+        'authorAvatarUrl': post.authorAvatarUrl,
+        'createdAt': post.createdAt.toIso8601String(),
+        'updatedAt': post.updatedAt.toIso8601String(),
+        'upvotes': post.upvotes,
+        'downvotes': post.downvotes,
+        'commentCount': post.commentCount,
+        'isFeatured': post.isFeatured,
+      },
+    );
     
     // Insert tags
     for (final tag in post.tags) {
-      await _connection.execute('''
-        INSERT INTO post_tags (post_id, tag)
-        VALUES (@postId, @tag)
-      ''', substitutionValues: {
-        'postId': post.id,
-        'tag': tag,
-      });
+      await _connection.execute(
+        Sql.named('INSERT INTO post_tags (post_id, tag) VALUES (@postId, @tag)'),
+        parameters: {
+          'postId': post.id,
+          'tag': tag,
+        },
+      );
     }
     
     // Update game post count
@@ -709,11 +715,10 @@ class PostgresDatabase {
   Future<Post?> getPostById(String postId) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT * FROM posts WHERE id = @postId
-    ''', substitutionValues: {
-      'postId': postId,
-    });
+    final results = await _connection.execute(
+      Sql.named('SELECT * FROM posts WHERE id = @postId'),
+      parameters: {'postId': postId},
+    );
     
     if (results.isEmpty) {
       return null;
@@ -722,11 +727,10 @@ class PostgresDatabase {
     final postData = results.first;
     
     // Get tags
-    final tagResults = await _connection.query('''
-      SELECT tag FROM post_tags WHERE post_id = @postId
-    ''', substitutionValues: {
-      'postId': postId,
-    });
+    final tagResults = await _connection.execute(
+      Sql.named('SELECT tag FROM post_tags WHERE post_id = @postId'),
+      parameters: {'postId': postId},
+    );
     
     final tags = tagResults.map((row) => row[0] as String).toList();
     
@@ -753,7 +757,7 @@ class PostgresDatabase {
   Future<List<Post>> getAllPosts() async {
     await connect();
     
-    final results = await _connection.query('SELECT id FROM posts');
+    final results = await _connection.execute('SELECT id FROM posts');
     
     final posts = <Post>[];
     for (final row in results) {
@@ -770,9 +774,9 @@ class PostgresDatabase {
   Future<List<Post>> getFeaturedPosts() async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT id FROM posts WHERE is_featured = TRUE
-    ''');
+    final results = await _connection.execute(
+      Sql.named('SELECT id FROM posts WHERE is_featured = TRUE')
+    );
     
     final posts = <Post>[];
     for (final row in results) {
@@ -789,11 +793,10 @@ class PostgresDatabase {
   Future<List<Post>> getLatestPosts(int limit) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT id FROM posts ORDER BY created_at DESC LIMIT @limit
-    ''', substitutionValues: {
-      'limit': limit,
-    });
+    final results = await _connection.execute(
+      Sql.named('SELECT id FROM posts ORDER BY created_at DESC LIMIT @limit'),
+      parameters: {'limit': limit},
+    );
     
     final posts = <Post>[];
     for (final row in results) {
@@ -810,11 +813,10 @@ class PostgresDatabase {
   Future<List<Post>> getPostsByGame(String gameId) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT id FROM posts WHERE game_id = @gameId
-    ''', substitutionValues: {
-      'gameId': gameId,
-    });
+    final results = await _connection.execute(
+      Sql.named('SELECT id FROM posts WHERE game_id = @gameId'),
+      parameters: {'gameId': gameId},
+    );
     
     final posts = <Post>[];
     for (final row in results) {
