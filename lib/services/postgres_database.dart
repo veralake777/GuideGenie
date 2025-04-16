@@ -582,7 +582,10 @@ class PostgresDatabase {
     
     return Game(
       id: gameData[0] as String,
+      title: gameData[1] as String,
       name: gameData[1] as String,
+      genre: genres.isNotEmpty ? genres[0] : 'Other',
+      imageUrl: gameData[3] as String,
       description: gameData[2] as String,
       coverImageUrl: gameData[3] as String,
       developer: gameData[4] as String,
@@ -1184,7 +1187,10 @@ class PostgresDatabase {
     // Create games
     final fortnite = Game(
       id: 'game-1',
+      title: 'Fortnite',
       name: 'Fortnite',
+      genre: 'Battle Royale',
+      imageUrl: 'https://cdn2.unrealengine.com/social-image-chapter4-s3-3840x2160-d35912cc25ad.jpg',
       description: 'A battle royale game where 100 players fight to be the last person standing.',
       coverImageUrl: 'https://cdn2.unrealengine.com/social-image-chapter4-s3-3840x2160-d35912cc25ad.jpg',
       developer: 'Epic Games',
@@ -1199,7 +1205,10 @@ class PostgresDatabase {
     
     final leagueOfLegends = Game(
       id: 'game-2',
+      title: 'League of Legends',
       name: 'League of Legends',
+      genre: 'MOBA',
+      imageUrl: 'https://www.leagueoflegends.com/static/open-graph-2e582ae9fae8b0b396ca46ff21fd47a8.jpg',
       description: 'A team-based strategy game where two teams of five champions compete to destroy the enemy base.',
       coverImageUrl: 'https://www.leagueoflegends.com/static/open-graph-2e582ae9fae8b0b396ca46ff21fd47a8.jpg',
       developer: 'Riot Games',
@@ -1214,7 +1223,10 @@ class PostgresDatabase {
     
     final valorant = Game(
       id: 'game-3',
+      title: 'Valorant',
       name: 'Valorant',
+      genre: 'Tactical FPS',
+      imageUrl: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt3f072336e3f3ade4/63096d7be4a8c30e088e7720/Valorant_2022_E5A2_PlayVALORANT_ContentStackThumbnail_1200x625_MB01.png',
       description: 'A 5v5 character-based tactical shooter where precise gunplay meets unique agent abilities.',
       coverImageUrl: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt3f072336e3f3ade4/63096d7be4a8c30e088e7720/Valorant_2022_E5A2_PlayVALORANT_ContentStackThumbnail_1200x625_MB01.png',
       developer: 'Riot Games',
@@ -1229,7 +1241,10 @@ class PostgresDatabase {
     
     final streetFighter = Game(
       id: 'game-4',
+      title: 'Street Fighter 6',
       name: 'Street Fighter 6',
+      genre: 'Fighting',
+      imageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/1364780/capsule_616x353.jpg',
       description: 'The latest entry in the legendary fighting game franchise with new mechanics and characters.',
       coverImageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/1364780/capsule_616x353.jpg',
       developer: 'Capcom',
@@ -1244,7 +1259,10 @@ class PostgresDatabase {
     
     final callOfDuty = Game(
       id: 'game-5',
+      title: 'Call of Duty: Modern Warfare III',
       name: 'Call of Duty: Modern Warfare III',
+      genre: 'FPS',
+      imageUrl: 'https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/mw3/meta-images/season-2/WZ_MWIII_S02_KEY_ART_16x9.jpg',
       description: 'The latest installment in the Call of Duty franchise featuring both multiplayer and campaign modes.',
       coverImageUrl: 'https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/mw3/meta-images/season-2/WZ_MWIII_S02_KEY_ART_16x9.jpg',
       developer: 'Infinity Ward',
@@ -1259,7 +1277,10 @@ class PostgresDatabase {
     
     final warzone = Game(
       id: 'game-6',
+      title: 'Call of Duty: Warzone',
       name: 'Call of Duty: Warzone',
+      genre: 'Battle Royale',
+      imageUrl: 'https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/blog/hero/mw-wz/WZ-Season-Three-Announce-TOUT.jpg',
       description: 'A free-to-play battle royale game from the Call of Duty franchise.',
       coverImageUrl: 'https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/blog/hero/mw-wz/WZ-Season-Three-Announce-TOUT.jpg',
       developer: 'Infinity Ward',
@@ -1274,7 +1295,10 @@ class PostgresDatabase {
     
     final marvelRivals = Game(
       id: 'game-7',
+      title: 'Marvel Rivals',
       name: 'Marvel Rivals',
+      genre: 'Hero Shooter',
+      imageUrl: 'https://cdn1.epicgames.com/offer/9ce578fa87934fa2b2cff24c6c388879/EGS_MarvelRivals_NetEaseGames_S2_1200x1600-1af611a128ddb0c059eb09e94e8dddc0',
       description: 'A team-based hero shooter set in the Marvel universe.',
       coverImageUrl: 'https://cdn1.epicgames.com/offer/9ce578fa87934fa2b2cff24c6c388879/EGS_MarvelRivals_NetEaseGames_S2_1200x1600-1af611a128ddb0c059eb09e94e8dddc0',
       developer: 'NetEase Games',
