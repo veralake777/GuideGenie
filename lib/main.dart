@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 
 void main() {
@@ -55,23 +54,23 @@ class MyApp extends StatelessWidget {
         ),
         
         // App bar theme
-        appBarTheme: AppBarTheme(
-          backgroundColor: const Color(0xFF181A1D),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF181A1D),
           elevation: 0,
           centerTitle: false,
-          titleTextStyle: GoogleFonts.inter(
+          titleTextStyle: TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
-          iconTheme: const IconThemeData(
+          iconTheme: IconThemeData(
             color: Colors.white,
           ),
         ),
         
-        // Text theme using Inter font
-        textTheme: GoogleFonts.interTextTheme(
-          ThemeData.dark().textTheme,
+        // Text theme using system fonts
+        textTheme: ThemeData.dark().textTheme.apply(
+          fontFamily: 'Roboto',
         ),
         
         // Button themes
@@ -176,9 +175,6 @@ class MyApp extends StatelessWidget {
           error: const Color(0xFFED4245),
         ),
         scaffoldBackgroundColor: const Color(0xFF181A1D),
-        textTheme: GoogleFonts.interTextTheme(
-          ThemeData.dark().textTheme,
-        ),
       ),
       
       themeMode: ThemeMode.dark,

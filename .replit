@@ -27,7 +27,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd /home/runner/workspace && flutter run -d web-server --web-hostname 0.0.0.0 --web-port 5000"
+args = "cd /home/runner/workspace && flutter run -d web-server --web-hostname 0.0.0.0 --web-port 5000 --web-renderer html"
 waitForPort = 5000
 
 [deployment]
