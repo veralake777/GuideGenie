@@ -833,11 +833,10 @@ class PostgresDatabase {
   Future<List<Post>> getPostsByUser(String userId) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT id FROM posts WHERE author_id = @userId
-    ''', substitutionValues: {
-      'userId': userId,
-    });
+    final results = await _connection.execute(
+      Sql.named('SELECT id FROM posts WHERE author_id = @userId'),
+      parameters: {'userId': userId},
+    );
     
     final posts = <Post>[];
     for (final row in results) {
@@ -854,54 +853,63 @@ class PostgresDatabase {
   Future<void> updatePostVotes(String postId, int upvotes, int downvotes) async {
     await connect();
     
-    await _connection.execute('''
-      UPDATE posts
-      SET upvotes = @upvotes, downvotes = @downvotes
-      WHERE id = @id
-    ''', substitutionValues: {
-      'id': postId,
-      'upvotes': upvotes,
-      'downvotes': downvotes,
-    });
+    await _connection.execute(
+      Sql.named('''
+        UPDATE posts
+        SET upvotes = @upvotes, downvotes = @downvotes
+        WHERE id = @id
+      '''),
+      parameters: {
+        'id': postId,
+        'upvotes': upvotes,
+        'downvotes': downvotes,
+      },
+    );
   }
   
   Future<void> updatePostCommentCount(String postId, int count) async {
     await connect();
     
-    await _connection.execute('''
-      UPDATE posts
-      SET comment_count = @count
-      WHERE id = @id
-    ''', substitutionValues: {
-      'id': postId,
-      'count': count,
-    });
+    await _connection.execute(
+      Sql.named('''
+        UPDATE posts
+        SET comment_count = @count
+        WHERE id = @id
+      '''),
+      parameters: {
+        'id': postId,
+        'count': count,
+      },
+    );
   }
   
   // Comment operations
   Future<void> createComment(Comment comment) async {
     await connect();
     
-    await _connection.execute('''
-      INSERT INTO comments (
-        id, post_id, content, author_id, author_name,
-        author_avatar_url, created_at, upvotes, downvotes
-      )
-      VALUES (
-        @id, @postId, @content, @authorId, @authorName,
-        @authorAvatarUrl, @createdAt, @upvotes, @downvotes
-      )
-    ''', substitutionValues: {
-      'id': comment.id,
-      'postId': comment.postId,
-      'content': comment.content,
-      'authorId': comment.authorId,
-      'authorName': comment.authorName,
-      'authorAvatarUrl': comment.authorAvatarUrl,
-      'createdAt': comment.createdAt.toIso8601String(),
-      'upvotes': comment.upvotes,
-      'downvotes': comment.downvotes,
-    });
+    await _connection.execute(
+      Sql.named('''
+        INSERT INTO comments (
+          id, post_id, content, author_id, author_name,
+          author_avatar_url, created_at, upvotes, downvotes
+        )
+        VALUES (
+          @id, @postId, @content, @authorId, @authorName,
+          @authorAvatarUrl, @createdAt, @upvotes, @downvotes
+        )
+      '''),
+      parameters: {
+        'id': comment.id,
+        'postId': comment.postId,
+        'content': comment.content,
+        'authorId': comment.authorId,
+        'authorName': comment.authorName,
+        'authorAvatarUrl': comment.authorAvatarUrl,
+        'createdAt': comment.createdAt.toIso8601String(),
+        'upvotes': comment.upvotes,
+        'downvotes': comment.downvotes,
+      },
+    );
     
     // Update post comment count
     final post = await getPostById(comment.postId);
@@ -913,13 +921,14 @@ class PostgresDatabase {
   Future<List<Comment>> getCommentsByPost(String postId) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT * FROM comments
-      WHERE post_id = @postId
-      ORDER BY created_at DESC
-    ''', substitutionValues: {
-      'postId': postId,
-    });
+    final results = await _connection.execute(
+      Sql.named('''
+        SELECT * FROM comments
+        WHERE post_id = @postId
+        ORDER BY created_at DESC
+      '''),
+      parameters: {'postId': postId},
+    );
     
     return results.map((row) {
       return Comment(
@@ -939,15 +948,18 @@ class PostgresDatabase {
   Future<void> updateCommentVotes(String commentId, int upvotes, int downvotes) async {
     await connect();
     
-    await _connection.execute('''
-      UPDATE comments
-      SET upvotes = @upvotes, downvotes = @downvotes
-      WHERE id = @id
-    ''', substitutionValues: {
-      'id': commentId,
-      'upvotes': upvotes,
-      'downvotes': downvotes,
-    });
+    await _connection.execute(
+      Sql.named('''
+        UPDATE comments
+        SET upvotes = @upvotes, downvotes = @downvotes
+        WHERE id = @id
+      '''),
+      parameters: {
+        'id': commentId,
+        'upvotes': upvotes,
+        'downvotes': downvotes,
+      },
+    );
   }
   
   // Vote operations
@@ -964,33 +976,42 @@ class PostgresDatabase {
     
     // Delete existing vote if any
     if (postId != null) {
-      await _connection.execute('''
-        DELETE FROM user_votes
-        WHERE user_id = @userId AND post_id = @postId
-      ''', substitutionValues: {
-        'userId': userId,
-        'postId': postId,
-      });
+      await _connection.execute(
+        Sql.named('''
+          DELETE FROM user_votes
+          WHERE user_id = @userId AND post_id = @postId
+        '''),
+        parameters: {
+          'userId': userId,
+          'postId': postId,
+        },
+      );
     } else if (commentId != null) {
-      await _connection.execute('''
-        DELETE FROM user_votes
-        WHERE user_id = @userId AND comment_id = @commentId
-      ''', substitutionValues: {
-        'userId': userId,
-        'commentId': commentId,
-      });
+      await _connection.execute(
+        Sql.named('''
+          DELETE FROM user_votes
+          WHERE user_id = @userId AND comment_id = @commentId
+        '''),
+        parameters: {
+          'userId': userId,
+          'commentId': commentId,
+        },
+      );
     }
     
     // Insert new vote
-    await _connection.execute('''
-      INSERT INTO user_votes (user_id, post_id, comment_id, is_upvote)
-      VALUES (@userId, @postId, @commentId, @isUpvote)
-    ''', substitutionValues: {
-      'userId': userId,
-      'postId': postId,
-      'commentId': commentId,
-      'isUpvote': isUpvote,
-    });
+    await _connection.execute(
+      Sql.named('''
+        INSERT INTO user_votes (user_id, post_id, comment_id, is_upvote)
+        VALUES (@userId, @postId, @commentId, @isUpvote)
+      '''),
+      parameters: {
+        'userId': userId,
+        'postId': postId,
+        'commentId': commentId,
+        'isUpvote': isUpvote,
+      },
+    );
     
     // Update vote count
     if (postId != null) {
@@ -1001,11 +1022,10 @@ class PostgresDatabase {
         await updatePostVotes(postId, upvotes, downvotes);
       }
     } else if (commentId != null) {
-      final commentResults = await _connection.query('''
-        SELECT upvotes, downvotes FROM comments WHERE id = @commentId
-      ''', substitutionValues: {
-        'commentId': commentId,
-      });
+      final commentResults = await _connection.execute(
+        Sql.named('SELECT upvotes, downvotes FROM comments WHERE id = @commentId'),
+        parameters: {'commentId': commentId},
+      );
       
       if (commentResults.isNotEmpty) {
         final upvotes = isUpvote 
@@ -1030,23 +1050,29 @@ class PostgresDatabase {
     await connect();
     
     if (postId != null) {
-      final results = await _connection.query('''
-        SELECT COUNT(*) FROM user_votes
-        WHERE user_id = @userId AND post_id = @postId
-      ''', substitutionValues: {
-        'userId': userId,
-        'postId': postId,
-      });
+      final results = await _connection.execute(
+        Sql.named('''
+          SELECT COUNT(*) FROM user_votes
+          WHERE user_id = @userId AND post_id = @postId
+        '''),
+        parameters: {
+          'userId': userId,
+          'postId': postId,
+        },
+      );
       
       return (results.first[0] as int) > 0;
     } else if (commentId != null) {
-      final results = await _connection.query('''
-        SELECT COUNT(*) FROM user_votes
-        WHERE user_id = @userId AND comment_id = @commentId
-      ''', substitutionValues: {
-        'userId': userId,
-        'commentId': commentId,
-      });
+      final results = await _connection.execute(
+        Sql.named('''
+          SELECT COUNT(*) FROM user_votes
+          WHERE user_id = @userId AND comment_id = @commentId
+        '''),
+        parameters: {
+          'userId': userId,
+          'commentId': commentId,
+        },
+      );
       
       return (results.first[0] as int) > 0;
     }
@@ -1065,13 +1091,16 @@ class PostgresDatabase {
     await connect();
     
     if (postId != null) {
-      final results = await _connection.query('''
-        SELECT is_upvote FROM user_votes
-        WHERE user_id = @userId AND post_id = @postId
-      ''', substitutionValues: {
-        'userId': userId,
-        'postId': postId,
-      });
+      final results = await _connection.execute(
+        Sql.named('''
+          SELECT is_upvote FROM user_votes
+          WHERE user_id = @userId AND post_id = @postId
+        '''),
+        parameters: {
+          'userId': userId,
+          'postId': postId,
+        },
+      );
       
       if (results.isEmpty) {
         return null;
@@ -1079,13 +1108,16 @@ class PostgresDatabase {
       
       return results.first[0] as bool;
     } else if (commentId != null) {
-      final results = await _connection.query('''
-        SELECT is_upvote FROM user_votes
-        WHERE user_id = @userId AND comment_id = @commentId
-      ''', substitutionValues: {
-        'userId': userId,
-        'commentId': commentId,
-      });
+      final results = await _connection.execute(
+        Sql.named('''
+          SELECT is_upvote FROM user_votes
+          WHERE user_id = @userId AND comment_id = @commentId
+        '''),
+        parameters: {
+          'userId': userId,
+          'commentId': commentId,
+        },
+      );
       
       if (results.isEmpty) {
         return null;
