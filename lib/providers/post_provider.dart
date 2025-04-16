@@ -57,15 +57,19 @@ class PostProvider with ChangeNotifier {
       
       return sortedPosts.take(5).map((post) => GuidePost(
         id: post.id,
-        title: post.title, 
-        description: post.content.length > 100 ? '${post.content.substring(0, 100)}...' : post.content,
-        author: post.authorName,
-        gameId: post.gameId,
-        type: post.type,
-        likes: post.upvotes,
-        comments: post.commentCount,
-        createdAt: post.createdAt,
+        title: post.title,
         content: post.content,
+        gameId: post.gameId,
+        gameName: post.gameName,
+        type: post.type,
+        authorId: post.authorId,
+        authorName: post.authorName,
+        authorAvatarUrl: post.authorAvatarUrl,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        likes: post.upvotes,
+        commentCount: post.commentCount,
+        tags: post.tags,
       )).toList();
     }
     

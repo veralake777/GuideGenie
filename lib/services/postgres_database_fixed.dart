@@ -420,7 +420,7 @@ class PostgresDatabase {
   Future<User?> getUserById(String userId) async {
     return await _executeDB((conn) async {
       final results = await conn.execute(
-        Sql.named('SELECT * FROM users WHERE id = @userId'),
+        'SELECT * FROM users WHERE id = @userId',
         parameters: {'userId': userId},
       );
       

@@ -45,13 +45,17 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
       post = GuidePost(
         id: widget.postId,
         title: 'Ultimate Fortnite Season X Weapon Tier List',
-        description: 'Check out the latest tier rankings for all weapons in Season X! This guide breaks down each weapon by its damage, rarity, and situational effectiveness.',
-        author: 'JohnDoe',
+        authorId: 'user1',
+        authorName: 'JohnDoe',
+        authorAvatarUrl: 'https://i.pravatar.cc/150?img=11',
         gameId: '1',
+        gameName: 'Fortnite',
         type: 'Tier List',
         likes: 245,
-        comments: 38,
+        commentCount: 38,
         createdAt: DateTime.now().subtract(const Duration(days: 2)),
+        updatedAt: DateTime.now().subtract(const Duration(days: 1)),
+        tags: ['weapon', 'tier-list', 'meta', 'season-x'],
         content: '''
 # Season X Weapon Tier List
 
@@ -193,7 +197,7 @@ With the new season underway, the meta has shifted significantly. Here's a compr
                         radius: 20,
                         backgroundColor: Theme.of(context).primaryColor,
                         child: Text(
-                          post!.author[0],
+                          post!.authorName[0],
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -205,7 +209,7 @@ With the new season underway, the meta has shifted significantly. Here's a compr
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            post!.author,
+                            post!.authorName,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -296,7 +300,7 @@ With the new season underway, the meta has shifted significantly. Here's a compr
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        post!.comments.toString(),
+                        post!.commentCount.toString(),
                         style: const TextStyle(
                           color: Colors.grey,
                           fontWeight: FontWeight.bold,
@@ -314,7 +318,7 @@ With the new season underway, the meta has shifted significantly. Here's a compr
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: Text(
-                'Comments (${post!.comments})',
+                'Comments (${post!.commentCount})',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
