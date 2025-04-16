@@ -1,38 +1,30 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
-  // App Info
+  // App info
   static const String appName = 'Guide Genie';
   static const String appVersion = '1.0.0';
-  static const String appTagline = 'Your gaming companion for tier lists, loadouts and strategies';
+  static const String appTagline = 'Your ultimate game guide companion';
+  
+  // Storage keys
+  static const String tokenKey = 'auth_token';
+  static const String userKey = 'user_data';
+  static const String themeKey = 'theme_mode';
+  static const String favoriteGamesKey = 'favorite_games';
   
   // Routes
   static const String splashRoute = '/';
   static const String homeRoute = '/home';
   static const String loginRoute = '/login';
   static const String registerRoute = '/register';
-  static const String profileRoute = '/profile';
-  static const String searchRoute = '/search';
-  static const String settingsRoute = '/settings';
   static const String gameDetailsRoute = '/game';
   static const String postDetailsRoute = '/post';
-  static const String createPostRoute = '/create-post';
+  static const String profileRoute = '/profile';
+  static const String searchRoute = '/search';
+  static const String createPostRoute = '/create_post';
+  static const String settingsRoute = '/settings';
   
-  // API Endpoints
-  static const String apiBaseUrl = 'https://api.guidegenie.com';
-  static const String authEndpoint = '/auth';
-  static const String usersEndpoint = '/users';
-  static const String gamesEndpoint = '/games';
-  static const String postsEndpoint = '/posts';
-  static const String commentsEndpoint = '/comments';
-  
-  // Storage Keys
-  static const String tokenKey = 'auth_token';
-  static const String userKey = 'current_user';
-  static const String themeKey = 'app_theme';
-  static const String favoriteGamesKey = 'favorite_games';
-  
-  // Dimensions
+  // Padding
   static const double paddingXXS = 2.0;
   static const double paddingXS = 4.0;
   static const double paddingS = 8.0;
@@ -41,143 +33,142 @@ class AppConstants {
   static const double paddingXL = 32.0;
   static const double paddingXXL = 48.0;
   
-  static const double borderRadiusS = 4.0;
-  static const double borderRadiusM = 8.0;
-  static const double borderRadiusL = 12.0;
-  static const double borderRadiusXL = 16.0;
+  // Border radius
+  static const double borderRadiusXS = 4.0;
+  static const double borderRadiusS = 8.0;
+  static const double borderRadiusM = 12.0;
+  static const double borderRadiusL = 16.0;
+  static const double borderRadiusXL = 24.0;
   
-  static const double iconSizeXS = 14.0;
-  static const double iconSizeS = 18.0;
+  // Font sizes
+  static const double fontSizeXS = 12.0;
+  static const double fontSizeS = 14.0;
+  static const double fontSizeM = 16.0;
+  static const double fontSizeL = 20.0;
+  static const double fontSizeXL = 24.0;
+  static const double fontSizeXXL = 32.0;
+  
+  // Icon sizes
+  static const double iconSizeS = 16.0;
   static const double iconSizeM = 24.0;
-  static const double iconSizeL = 36.0;
+  static const double iconSizeL = 32.0;
   static const double iconSizeXL = 48.0;
   
-  static const double avatarSizeS = 24.0;
-  static const double avatarSizeM = 40.0;
-  static const double avatarSizeL = 64.0;
-  static const double avatarSizeXL = 120.0;
+  // Animation durations
+  static const Duration animationDurationFast = Duration(milliseconds: 200);
+  static const Duration animationDurationMedium = Duration(milliseconds: 300);
+  static const Duration animationDurationSlow = Duration(milliseconds: 500);
   
-  static const double fontSizeXS = 10.0;
-  static const double fontSizeS = 12.0;
-  static const double fontSizeM = 14.0;
-  static const double fontSizeL = 18.0;
-  static const double fontSizeXL = 24.0;
-  static const double fontSizeXXL = 30.0;
-  static const double fontSizeXXXL = 36.0;
-  
-  // Colors
-  static const Color primaryColor = Color(0xFF6200EE);
-  static const Color primaryVariantColor = Color(0xFF3700B3);
-  static const Color secondaryColor = Color(0xFF03DAC6);
-  static const Color secondaryVariantColor = Color(0xFF018786);
-  static const Color backgroundColor = Color(0xFFF5F5F5);
-  static const Color errorColor = Color(0xFFB00020);
-  
-  static const Color darkPrimaryColor = Color(0xFFBB86FC);
-  static const Color darkPrimaryVariantColor = Color(0xFF3700B3);
-  static const Color darkSecondaryColor = Color(0xFF03DAC6);
-  static const Color darkSecondaryVariantColor = Color(0xFF03DAC6);
-  static const Color darkBackgroundColor = Color(0xFF121212);
-  static const Color darkErrorColor = Color(0xFFCF6679);
-  
-  // Theme
-  static ThemeData lightTheme = ThemeData(
-    primaryColor: primaryColor,
-    colorScheme: const ColorScheme.light(
-      primary: primaryColor,
-      primaryContainer: primaryVariantColor,
-      secondary: secondaryColor,
-      secondaryContainer: secondaryVariantColor,
-      background: backgroundColor,
-      error: errorColor,
+  // Light theme
+  static final ThemeData lightTheme = ThemeData(
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.deepPurple,
       brightness: Brightness.light,
     ),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: primaryColor,
+    appBarTheme: AppBarTheme(
+      elevation: 0,
+      centerTitle: false,
+      backgroundColor: Colors.deepPurple,
       foregroundColor: Colors.white,
-    ),
-    cardTheme: CardTheme(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadiusM),
+      titleTextStyle: const TextStyle(
+        fontSize: fontSizeL,
+        fontWeight: FontWeight.bold,
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
+        elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadiusM),
         ),
       ),
     ),
-    fontFamily: 'Roboto',
+    cardTheme: CardTheme(
+      elevation: 2,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadiusM),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusM),
+      ),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: paddingM,
+        vertical: paddingM,
+      ),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadiusM),
+      ),
+    ),
+    navigationDrawerTheme: NavigationDrawerThemeData(
+      elevation: 2,
+      tileHeight: 56,
+      indicatorShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadiusM),
+      ),
+    ),
+    scaffoldBackgroundColor: Colors.grey[50],
   );
   
-  static ThemeData darkTheme = ThemeData(
-    primaryColor: darkPrimaryColor,
-    colorScheme: const ColorScheme.dark(
-      primary: darkPrimaryColor,
-      primaryContainer: darkPrimaryVariantColor,
-      secondary: darkSecondaryColor,
-      secondaryContainer: darkSecondaryVariantColor,
-      background: darkBackgroundColor,
-      error: darkErrorColor,
+  // Dark theme
+  static final ThemeData darkTheme = ThemeData(
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.deepPurple,
       brightness: Brightness.dark,
     ),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF1F1F1F),
-      foregroundColor: Colors.white,
-    ),
-    cardTheme: CardTheme(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadiusM),
+    appBarTheme: AppBarTheme(
+      elevation: 0,
+      centerTitle: false,
+      backgroundColor: Colors.deepPurple[800],
+      titleTextStyle: const TextStyle(
+        fontSize: fontSizeL,
+        fontWeight: FontWeight.bold,
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: darkPrimaryColor,
-        foregroundColor: Colors.black,
+        elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadiusM),
         ),
       ),
     ),
-    fontFamily: 'Roboto',
+    cardTheme: CardTheme(
+      elevation: 2,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadiusM),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusM),
+      ),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: paddingM,
+        vertical: paddingM,
+      ),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadiusM),
+      ),
+    ),
+    navigationDrawerTheme: NavigationDrawerThemeData(
+      elevation: 2,
+      tileHeight: 56,
+      indicatorShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadiusM),
+      ),
+    ),
+    scaffoldBackgroundColor: const Color(0xFF121212),
   );
-  
-  // Guide Type Icons and Names
-  static const Map<String, IconData> guideTypeIcons = {
-    'strategy': Icons.psychology,
-    'tierList': Icons.list,
-    'loadout': Icons.inventory,
-    'beginnerTips': Icons.tips_and_updates,
-    'advancedTips': Icons.star,
-    'metaAnalysis': Icons.analytics,
-    'update': Icons.update,
-    'news': Icons.newspaper,
-    'other': Icons.article,
-  };
-  
-  static const Map<String, String> guideTypeNames = {
-    'strategy': 'Strategy',
-    'tierList': 'Tier List',
-    'loadout': 'Loadout',
-    'beginnerTips': 'Beginner Tips',
-    'advancedTips': 'Advanced Tips',
-    'metaAnalysis': 'Meta Analysis',
-    'update': 'Update',
-    'news': 'News',
-    'other': 'Other',
-  };
-  
-  // Mock Data
-  static const List<String> supportedGames = [
-    'Fortnite',
-    'League of Legends',
-    'Valorant',
-    'Street Fighter',
-    'Call of Duty',
-    'Warzone',
-    'Marvel Rivals',
-  ];
 }

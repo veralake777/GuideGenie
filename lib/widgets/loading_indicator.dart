@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:guide_genie/utils/constants.dart';
 
 class LoadingIndicator extends StatelessWidget {
-  final String? message;
+  final String message;
   
   const LoadingIndicator({
     Key? key,
-    this.message,
+    this.message = 'Loading...',
   }) : super(key: key);
 
   @override
@@ -20,17 +20,14 @@ class LoadingIndicator extends StatelessWidget {
               Theme.of(context).colorScheme.primary,
             ),
           ),
-          if (message != null) ...[
-            const SizedBox(height: AppConstants.paddingM),
-            Text(
-              message!,
-              style: TextStyle(
-                fontSize: AppConstants.fontSizeM,
-                color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
+          const SizedBox(height: AppConstants.paddingM),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: AppConstants.fontSizeM,
+              color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
             ),
-          ],
+          ),
         ],
       ),
     );

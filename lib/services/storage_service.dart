@@ -1,91 +1,83 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:guide_genie/utils/constants.dart';
 
 class StorageService {
-  static const String authTokenKey = 'auth_token';
-  static const String themeKey = 'app_theme';
-  static const String onboardingKey = 'onboarding_completed';
-
-  // Save authentication token
+  // Authentication token
   Future<void> saveAuthToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(authTokenKey, token);
+    await prefs.setString(AppConstants.tokenKey, token);
   }
 
-  // Get authentication token
   Future<String?> getAuthToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(authTokenKey);
+    return prefs.getString(AppConstants.tokenKey);
   }
 
-  // Delete authentication token (logout)
   Future<void> deleteAuthToken() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(authTokenKey);
+    await prefs.remove(AppConstants.tokenKey);
   }
 
-  // Save theme preference
-  Future<void> saveThemePreference(bool isDarkMode) async {
+  // User data
+  Future<void> saveUser(Map<String, dynamic> userData) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(themeKey, isDarkMode);
+    final jsonString = jsonEncode(userData);
+    await prefs.setString(AppConstants.userKey, jsonString);
   }
 
-  // Get theme preference
-  Future<bool?> getThemePreference() async {
+  Future<Map<String, dynamic>?> getUser() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(themeKey);
+    final jsonString = prefs.getString(AppConstants.userKey);
+    
+    if (jsonString == null) {
+      return null;
+    }
+    
+    return jsonDecode(jsonString) as Map<String, dynamic>;
   }
 
-  // Mark onboarding as completed
-  Future<void> completeOnboarding() async {
+  Future<void> deleteUser() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(onboardingKey, true);
+    await prefs.remove(AppConstants.userKey);
   }
 
-  // Check if onboarding is completed
-  Future<bool> isOnboardingCompleted() async {
+  // Theme preference
+  Future<void> saveThemeMode(String themeMode) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(onboardingKey) ?? false;
+    await prefs.setString(AppConstants.themeKey, themeMode);
   }
 
-  // Save favorite games
+  Future<String?> getThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(AppConstants.themeKey);
+  }
+
+  // Favorite games
   Future<void> saveFavoriteGames(List<String> gameIds) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('favorite_games', gameIds);
+    await prefs.setStringList(AppConstants.favoriteGamesKey, gameIds);
   }
 
-  // Get favorite games
   Future<List<String>> getFavoriteGames() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList('favorite_games') ?? [];
+    return prefs.getStringList(AppConstants.favoriteGamesKey) ?? [];
   }
 
-  // Save recent searches
-  Future<void> saveRecentSearches(List<String> searches) async {
+  // App settings
+  Future<void> saveSetting(String key, String value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('recent_searches', searches);
+    await prefs.setString(key, value);
   }
 
-  // Get recent searches
-  Future<List<String>> getRecentSearches() async {
+  Future<String?> getSetting(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList('recent_searches') ?? [];
+    return prefs.getString(key);
   }
 
-  // Clear recent searches
-  Future<void> clearRecentSearches() async {
+  // Clear all data
+  Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('recent_searches');
-  }
-
-  // Save last visited game
-  Future<void> saveLastVisitedGame(String gameId) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('last_visited_game', gameId);
-  }
-
-  // Get last visited game
-  Future<String?> getLastVisitedGame() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('last_visited_game');
+    await prefs.clear();
   }
 }

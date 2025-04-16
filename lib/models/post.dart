@@ -2,12 +2,12 @@ enum GuideType {
   strategy,
   tierList,
   loadout,
+  metaAnalysis,
   beginnerTips,
   advancedTips,
-  metaAnalysis,
-  update,
+  patch,
   news,
-  other
+  other,
 }
 
 class Post {
@@ -16,7 +16,7 @@ class Post {
   final String content;
   final String gameId;
   final String gameName;
-  final GuideType type;
+  final String type;
   final List<String> tags;
   final String authorId;
   final String authorName;
@@ -44,27 +44,27 @@ class Post {
     required this.upvotes,
     required this.downvotes,
     required this.commentCount,
-    this.isFeatured = false,
+    required this.isFeatured,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      id: json['id'],
-      title: json['title'],
-      content: json['content'],
-      gameId: json['gameId'],
-      gameName: json['gameName'],
-      type: _parseGuideType(json['type']),
-      tags: List<String>.from(json['tags']),
-      authorId: json['authorId'],
-      authorName: json['authorName'],
-      authorAvatarUrl: json['authorAvatarUrl'] ?? '',
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      upvotes: json['upvotes'],
-      downvotes: json['downvotes'],
-      commentCount: json['commentCount'],
-      isFeatured: json['isFeatured'] ?? false,
+      id: json['id'] as String,
+      title: json['title'] as String,
+      content: json['content'] as String,
+      gameId: json['gameId'] as String,
+      gameName: json['gameName'] as String,
+      type: json['type'] as String,
+      tags: (json['tags'] as List<dynamic>).cast<String>(),
+      authorId: json['authorId'] as String,
+      authorName: json['authorName'] as String,
+      authorAvatarUrl: json['authorAvatarUrl'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      upvotes: json['upvotes'] as int,
+      downvotes: json['downvotes'] as int,
+      commentCount: json['commentCount'] as int,
+      isFeatured: json['isFeatured'] as bool,
     );
   }
 
@@ -75,7 +75,7 @@ class Post {
       'content': content,
       'gameId': gameId,
       'gameName': gameName,
-      'type': type.toString().split('.').last,
+      'type': type,
       'tags': tags,
       'authorId': authorId,
       'authorName': authorName,
@@ -89,23 +89,13 @@ class Post {
     };
   }
 
-  static GuideType _parseGuideType(String typeStr) {
-    try {
-      return GuideType.values.firstWhere(
-        (type) => type.toString().split('.').last == typeStr,
-      );
-    } catch (e) {
-      return GuideType.other;
-    }
-  }
-
   Post copyWith({
     String? id,
     String? title,
     String? content,
     String? gameId,
     String? gameName,
-    GuideType? type,
+    String? type,
     List<String>? tags,
     String? authorId,
     String? authorName,
@@ -163,15 +153,15 @@ class Comment {
 
   factory Comment.fromJson(Map<String, dynamic> json) {
     return Comment(
-      id: json['id'],
-      postId: json['postId'],
-      content: json['content'],
-      authorId: json['authorId'],
-      authorName: json['authorName'],
-      authorAvatarUrl: json['authorAvatarUrl'] ?? '',
-      createdAt: DateTime.parse(json['createdAt']),
-      upvotes: json['upvotes'],
-      downvotes: json['downvotes'],
+      id: json['id'] as String,
+      postId: json['postId'] as String,
+      content: json['content'] as String,
+      authorId: json['authorId'] as String,
+      authorName: json['authorName'] as String,
+      authorAvatarUrl: json['authorAvatarUrl'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      upvotes: json['upvotes'] as int,
+      downvotes: json['downvotes'] as int,
     );
   }
 

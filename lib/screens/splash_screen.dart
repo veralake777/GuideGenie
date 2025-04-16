@@ -10,59 +10,26 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeInAnimation;
-  late Animation<double> _scaleAnimation;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    
-    // Set up animations
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-    
-    _fadeInAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
-      ),
-    );
-    
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.5, curve: Curves.easeOutBack),
-      ),
-    );
-    
-    _animationController.forward();
-    
-    // Check authentication status and navigate after a delay
-    _checkAuthAndNavigate();
+    _checkAuth();
   }
 
-  Future<void> _checkAuthAndNavigate() async {
-    // Wait for animations
-    await Future.delayed(const Duration(milliseconds: 2000));
+  Future<void> _checkAuth() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.checkAuth();
     
     if (!mounted) return;
     
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.checkAuthentication();
+    // Delay for splash screen effect
+    await Future.delayed(const Duration(seconds: 2));
+    
+    if (!mounted) return;
     
     // Navigate to home screen
-    if (!mounted) return;
     Navigator.pushReplacementNamed(context, AppConstants.homeRoute);
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 
   @override
@@ -75,68 +42,84 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.8),
               Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.primary.withOpacity(0.8),
               Theme.of(context).colorScheme.secondary,
             ],
           ),
         ),
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo
-                FadeTransition(
-                  opacity: _fadeInAnimation,
-                  child: ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: Icon(
-                      Icons.videogame_asset,
-                      size: 120,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // App icon
+            Container(
+              padding: const EdgeInsets.all(AppConstants.paddingL),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
                   ),
-                ),
-                const SizedBox(height: AppConstants.paddingL),
-                // App Name
-                FadeTransition(
-                  opacity: _fadeInAnimation,
-                  child: Text(
-                    AppConstants.appName,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontSize: AppConstants.fontSizeXXXL,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ],
+              ),
+              child: Icon(
+                Icons.videogame_asset,
+                size: 100,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            
+            const SizedBox(height: AppConstants.paddingXL),
+            
+            // App name
+            Text(
+              AppConstants.appName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                shadows: [
+                  Shadow(
+                    color: Colors.black26,
+                    blurRadius: 5,
+                    offset: Offset(0, 2),
                   ),
-                ),
-                const SizedBox(height: AppConstants.paddingS),
-                // Tagline
-                FadeTransition(
-                  opacity: _fadeInAnimation,
-                  child: Text(
-                    AppConstants.appTagline,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
-                      fontSize: AppConstants.fontSizeM,
-                    ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: AppConstants.paddingM),
+            
+            // App tagline
+            Text(
+              AppConstants.appTagline,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: AppConstants.fontSizeM,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
+                shadows: [
+                  Shadow(
+                    color: Colors.black26,
+                    blurRadius: 3,
+                    offset: Offset(0, 1),
                   ),
-                ),
-                const SizedBox(height: AppConstants.paddingXXL),
-                // Loading indicator
-                FadeTransition(
-                  opacity: _fadeInAnimation,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: AppConstants.paddingXXL),
+            
+            // Loading indicator
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ],
         ),
       ),
     );

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:guide_genie/models/game.dart';
-import 'package:guide_genie/models/post.dart';
-import 'package:guide_genie/providers/auth_provider.dart';
 import 'package:guide_genie/providers/game_provider.dart';
 import 'package:guide_genie/providers/post_provider.dart';
 import 'package:guide_genie/utils/constants.dart';
 import 'package:guide_genie/widgets/app_drawer.dart';
+import 'package:guide_genie/widgets/featured_post_card.dart';
 import 'package:guide_genie/widgets/game_card.dart';
 import 'package:guide_genie/widgets/post_card.dart';
-import 'package:guide_genie/widgets/featured_post_card.dart';
 import 'package:guide_genie/widgets/loading_indicator.dart';
 import 'package:guide_genie/widgets/error_message.dart';
 import 'package:guide_genie/widgets/section_title.dart';
@@ -22,176 +19,107 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _scrollController = ScrollController();
-  bool _showAppBarTitle = false;
-
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_scrollListener);
     
-    // Fetch featured games and posts
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Fetch initial data
       final gameProvider = Provider.of<GameProvider>(context, listen: false);
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       
-      if (gameProvider.games.isEmpty) {
-        gameProvider.fetchGames();
-      }
-      
-      if (postProvider.featuredPosts.isEmpty) {
-        postProvider.fetchFeaturedPosts();
-      }
+      gameProvider.fetchGames();
+      postProvider.fetchFeaturedPosts();
+      postProvider.fetchLatestPosts();
     });
-  }
-
-  void _scrollListener() {
-    // Show app bar title after scrolling past a certain point
-    if (_scrollController.offset > 150 && !_showAppBarTitle) {
-      setState(() {
-        _showAppBarTitle = true;
-      });
-    } else if (_scrollController.offset <= 150 && _showAppBarTitle) {
-      setState(() {
-        _showAppBarTitle = false;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_scrollListener);
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildAppBar(),
-          _buildBody(),
+      appBar: AppBar(
+        title: const Text(AppConstants.appName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'Search',
+            onPressed: () {
+              Navigator.pushNamed(context, AppConstants.searchRoute);
+            },
+          ),
         ],
       ),
-      floatingActionButton: _buildFloatingActionButton(),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: 180.0,
-      floating: false,
-      pinned: true,
-      title: _showAppBarTitle ? Text(AppConstants.appName) : null,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          padding: const EdgeInsets.fromLTRB(
-            AppConstants.paddingL,
-            AppConstants.paddingXL * 2,
-            AppConstants.paddingL,
-            AppConstants.paddingL,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
-              ],
-            ),
-          ),
+      drawer: const AppDrawer(),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          final gameProvider = Provider.of<GameProvider>(context, listen: false);
+          final postProvider = Provider.of<PostProvider>(context, listen: false);
+          
+          await gameProvider.fetchGames();
+          await postProvider.fetchFeaturedPosts();
+          await postProvider.fetchLatestPosts();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                AppConstants.appName,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontSize: AppConstants.fontSizeXXXL,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: AppConstants.paddingXS),
-              Text(
-                AppConstants.appTagline,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
-                  fontSize: AppConstants.fontSizeM,
-                ),
-              ),
+              _buildFeaturedPosts(),
+              _buildPopularGames(),
+              _buildLatestGuides(),
+              _buildGameCategories(),
+              const SizedBox(height: AppConstants.paddingXL),
             ],
           ),
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () {
-            Navigator.pushNamed(context, AppConstants.searchRoute);
-          },
-        ),
-      ],
     );
   }
 
-  Widget _buildBody() {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingM),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildFeaturedGames(),
-            const SizedBox(height: AppConstants.paddingL),
-            _buildFeaturedPosts(),
-            const SizedBox(height: AppConstants.paddingL),
-            _buildGuideTypes(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeaturedGames() {
-    return Consumer<GameProvider>(
-      builder: (context, gameProvider, _) {
-        if (gameProvider.isLoading) {
-          return const LoadingIndicator();
-        }
-
-        if (gameProvider.errorMessage != null) {
-          return ErrorMessage(
-            message: gameProvider.errorMessage!,
-            onRetry: () => gameProvider.fetchGames(),
+  Widget _buildFeaturedPosts() {
+    return Consumer<PostProvider>(
+      builder: (context, postProvider, _) {
+        if (postProvider.isLoading && postProvider.featuredPosts.isEmpty) {
+          return const SizedBox(
+            height: 300,
+            child: LoadingIndicator(message: 'Loading featured guides...'),
           );
         }
 
-        if (gameProvider.featuredGames.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppConstants.paddingL),
-            child: Text(AppConstants.emptyGamesList),
+        if (postProvider.errorMessage != null && postProvider.featuredPosts.isEmpty) {
+          return SizedBox(
+            height: 300,
+            child: ErrorMessage(
+              message: postProvider.errorMessage!,
+              onRetry: () => postProvider.fetchFeaturedPosts(),
+            ),
           );
+        }
+
+        if (postProvider.featuredPosts.isEmpty) {
+          return const SizedBox.shrink();
         }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionTitle(title: 'Featured Games'),
+            const SectionTitle(
+              title: 'Featured Guides',
+              subtitle: 'Trending content selected for you',
+            ),
             SizedBox(
-              height: AppConstants.gameCardHeight,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingM),
-                itemCount: gameProvider.featuredGames.length,
+              height: 350,
+              child: PageView.builder(
+                padEnds: false,
+                controller: PageController(viewportFraction: 0.9),
+                itemCount: postProvider.featuredPosts.length,
                 itemBuilder: (context, index) {
-                  final game = gameProvider.featuredGames[index];
-                  return GameCard(game: game);
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.paddingS,
+                    ),
+                    child: FeaturedPostCard(post: postProvider.featuredPosts[index]),
+                  );
                 },
               ),
             ),
@@ -201,94 +129,198 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFeaturedPosts() {
-    return Consumer<PostProvider>(
-      builder: (context, postProvider, _) {
-        if (postProvider.isLoading) {
-          return const LoadingIndicator();
-        }
-
-        if (postProvider.errorMessage != null) {
-          return ErrorMessage(
-            message: postProvider.errorMessage!,
-            onRetry: () => postProvider.fetchFeaturedPosts(),
+  Widget _buildPopularGames() {
+    return Consumer<GameProvider>(
+      builder: (context, gameProvider, _) {
+        if (gameProvider.isLoading && gameProvider.games.isEmpty) {
+          return const SizedBox(
+            height: 200,
+            child: LoadingIndicator(message: 'Loading popular games...'),
           );
         }
 
-        if (postProvider.featuredPosts.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppConstants.paddingL),
-            child: Text(AppConstants.emptyPostsList),
+        if (gameProvider.errorMessage != null && gameProvider.games.isEmpty) {
+          return SizedBox(
+            height: 200,
+            child: ErrorMessage(
+              message: gameProvider.errorMessage!,
+              onRetry: () => gameProvider.fetchGames(),
+            ),
           );
         }
+
+        if (gameProvider.games.isEmpty) {
+          return const SizedBox(
+            height: 200,
+            child: Center(
+              child: Text('No games found'),
+            ),
+          );
+        }
+
+        // Filter featured games
+        final featuredGames = gameProvider.games
+            .where((game) => game.isFeatured)
+            .toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionTitle(title: 'Featured Guides'),
-            postProvider.featuredPosts.isNotEmpty
-                ? FeaturedPostCard(post: postProvider.featuredPosts.first)
-                : const SizedBox.shrink(),
-            const SizedBox(height: AppConstants.paddingM),
-            if (postProvider.featuredPosts.length > 1)
-              SizedBox(
-                height: AppConstants.postCardHeight,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingM),
-                  itemCount: postProvider.featuredPosts.length - 1,
-                  itemBuilder: (context, index) {
-                    // Skip the first post since it's displayed as featured
-                    final post = postProvider.featuredPosts[index + 1];
-                    return PostCard(post: post);
-                  },
+            SectionTitle(
+              title: 'Popular Games',
+              subtitle: 'Check out guides for these trending games',
+              onSeeAll: () {
+                // TODO: Navigate to games list
+              },
+            ),
+            SizedBox(
+              height: 220,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.paddingM,
                 ),
+                itemCount: featuredGames.isEmpty 
+                    ? gameProvider.games.length 
+                    : featuredGames.length,
+                itemBuilder: (context, index) {
+                  final game = featuredGames.isEmpty 
+                      ? gameProvider.games[index] 
+                      : featuredGames[index];
+                  
+                  return GameCard(
+                    game: game,
+                    isCompact: true,
+                  );
+                },
               ),
+            ),
           ],
         );
       },
     );
   }
 
-  Widget _buildGuideTypes() {
+  Widget _buildLatestGuides() {
+    return Consumer<PostProvider>(
+      builder: (context, postProvider, _) {
+        if (postProvider.isLoading && postProvider.latestPosts.isEmpty) {
+          return const SizedBox(
+            height: 200,
+            child: LoadingIndicator(message: 'Loading latest guides...'),
+          );
+        }
+
+        if (postProvider.errorMessage != null && postProvider.latestPosts.isEmpty) {
+          return SizedBox(
+            height: 200,
+            child: ErrorMessage(
+              message: postProvider.errorMessage!,
+              onRetry: () => postProvider.fetchLatestPosts(),
+            ),
+          );
+        }
+
+        if (postProvider.latestPosts.isEmpty) {
+          return const SizedBox(
+            height: 200,
+            child: Center(
+              child: Text('No guides found'),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SectionTitle(
+              title: 'Latest Guides',
+              subtitle: 'Fresh guides from the community',
+              onSeeAll: () {
+                // TODO: Navigate to posts list
+              },
+            ),
+            SizedBox(
+              height: 250,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.paddingM,
+                ),
+                itemCount: postProvider.latestPosts.length,
+                itemBuilder: (context, index) {
+                  return PostCard(post: postProvider.latestPosts[index]);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGameCategories() {
+    final categories = [
+      {'icon': Icons.sports_esports, 'title': 'Shooter', 'color': Colors.red},
+      {'icon': Icons.public, 'title': 'MOBA', 'color': Colors.blue},
+      {'icon': Icons.fitness_center, 'title': 'Fighting', 'color': Colors.orange},
+      {'icon': Icons.style, 'title': 'Battle Royale', 'color': Colors.purple},
+      {'icon': Icons.directions_run, 'title': 'Action', 'color': Colors.green},
+      {'icon': Icons.psychology, 'title': 'Strategy', 'color': Colors.indigo},
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionTitle(title: 'Guide Categories'),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingM),
-          child: GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 3,
-            mainAxisSpacing: AppConstants.paddingM,
-            crossAxisSpacing: AppConstants.paddingM,
-            children: GuideType.values.map((type) {
-              return _buildGuideTypeCard(type);
-            }).toList(),
+        const SectionTitle(
+          title: 'Game Categories',
+          subtitle: 'Find games by genre',
+        ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.paddingL,
+            vertical: AppConstants.paddingS,
           ),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 1.2,
+            crossAxisSpacing: AppConstants.paddingM,
+            mainAxisSpacing: AppConstants.paddingM,
+          ),
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            return _buildCategoryItem(
+              icon: category['icon'] as IconData,
+              title: category['title'] as String,
+              color: category['color'] as Color,
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _buildGuideTypeCard(GuideType type) {
-    final typeName = type.toString().split('.').last;
-    
+  Widget _buildCategoryItem({
+    required IconData icon,
+    required String title,
+    required Color color,
+  }) {
     return InkWell(
       onTap: () {
-        // TODO: Navigate to guide type filter
+        // TODO: Navigate to category games
       },
-      borderRadius: BorderRadius.circular(AppConstants.borderRadiusM),
+      borderRadius: BorderRadius.circular(AppConstants.borderRadiusL),
       child: Container(
-        padding: const EdgeInsets.all(AppConstants.paddingM),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusM),
+          borderRadius: BorderRadius.circular(AppConstants.borderRadiusL),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
+              blurRadius: 5,
               offset: const Offset(0, 2),
             ),
           ],
@@ -297,38 +329,21 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              AppConstants.guideTypeIcons[typeName],
+              icon,
               size: AppConstants.iconSizeL,
-              color: Theme.of(context).colorScheme.primary,
+              color: color,
             ),
-            const SizedBox(height: AppConstants.paddingS),
+            const SizedBox(height: AppConstants.paddingXS),
             Text(
-              AppConstants.guideTypeNames[typeName] ?? typeName,
-              textAlign: TextAlign.center,
+              title,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: AppConstants.fontSizeS,
+                fontSize: AppConstants.fontSizeM,
               ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  Widget? _buildFloatingActionButton() {
-    final authProvider = Provider.of<AuthProvider>(context);
-    
-    if (authProvider.isAuthenticated) {
-      return FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, AppConstants.createPostRoute);
-        },
-        tooltip: 'Create Guide',
-        child: const Icon(Icons.add),
-      );
-    }
-    
-    return null;
   }
 }

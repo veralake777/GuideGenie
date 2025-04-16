@@ -1,16 +1,16 @@
 enum GameCategory {
+  shooter,
+  battleRoyale,
+  moba,
+  strategy,
+  fighting,
+  rpg,
+  sports,
+  racing,
+  puzzle,
+  cardGame,
   action,
   adventure,
-  rpg,
-  strategy,
-  sports,
-  shooter,
-  moba,
-  mmo,
-  fighting,
-  battle_royale,
-  racing,
-  other
 }
 
 class Game {
@@ -39,23 +39,23 @@ class Game {
     required this.genres,
     required this.rating,
     required this.postCount,
-    this.isFeatured = false,
+    required this.isFeatured,
   });
 
   factory Game.fromJson(Map<String, dynamic> json) {
     return Game(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      coverImageUrl: json['coverImageUrl'],
-      developer: json['developer'],
-      publisher: json['publisher'],
-      releaseDate: json['releaseDate'],
-      platforms: List<String>.from(json['platforms']),
-      genres: List<String>.from(json['genres']),
-      rating: json['rating'].toDouble(),
-      postCount: json['postCount'],
-      isFeatured: json['isFeatured'] ?? false,
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String,
+      coverImageUrl: json['coverImageUrl'] as String,
+      developer: json['developer'] as String,
+      publisher: json['publisher'] as String,
+      releaseDate: json['releaseDate'] as String,
+      platforms: (json['platforms'] as List<dynamic>).cast<String>(),
+      genres: (json['genres'] as List<dynamic>).cast<String>(),
+      rating: json['rating'] as double,
+      postCount: json['postCount'] as int,
+      isFeatured: json['isFeatured'] as bool,
     );
   }
 
