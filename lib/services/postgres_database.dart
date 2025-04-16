@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:guide_genie/models/game.dart';
 import 'package:guide_genie/models/post.dart';
 import 'package:guide_genie/models/user.dart';
+import 'package:guide_genie/models/comment.dart';
 
 class PostgresDatabase {
   static final PostgresDatabase _instance = PostgresDatabase._internal();
@@ -17,26 +18,88 @@ class PostgresDatabase {
   Future<void> connect() async {
     if (_isConnected) return;
     
-    final host = String.fromEnvironment('PGHOST', defaultValue: 'localhost');
-    final port = int.parse(String.fromEnvironment('PGPORT', defaultValue: '5432'));
-    final username = String.fromEnvironment('PGUSER', defaultValue: 'postgres');
-    final password = String.fromEnvironment('PGPASSWORD', defaultValue: '');
-    final database = String.fromEnvironment('PGDATABASE', defaultValue: 'guide_genie');
+    print('PostgresDatabase: Attempting to connect to database...');
     
-    _connection = PostgreSQLConnection(
-      host,
-      port, 
-      database,
-      username: username,
-      password: password,
-    );
+    // Try to get database URL from environment or .env file
+    String? databaseUrl = const String.fromEnvironment('DATABASE_URL');
+    
+    // Import dart:io conditionally for platform check (web doesn't support dart:io)
+    try {
+      // If not set, try to get from dotenv
+      if (databaseUrl.isEmpty) {
+        print('PostgresDatabase: DATABASE_URL from environment is empty, trying dotenv...');
+        databaseUrl = dotenv.env['DATABASE_URL'];
+      }
+      
+      print('PostgresDatabase: Using database URL: ${databaseUrl?.replaceAll(RegExp(r'postgres://[^:]+:[^@]+@'), 'postgres://user:password@')}');
+      
+    } catch (e) {
+      print('PostgresDatabase: Error getting DATABASE_URL: $e');
+    }
     
     try {
+      if (databaseUrl != null && databaseUrl.isNotEmpty) {
+        print('PostgresDatabase: Connecting using DATABASE_URL...');
+        
+        // Parse the database URL manually
+        final uri = Uri.parse(databaseUrl);
+        final userInfo = uri.userInfo.split(':');
+        final username = userInfo[0];
+        final password = userInfo.length > 1 ? userInfo[1] : '';
+        final database = uri.path.replaceFirst('/', '');
+        
+        print('PostgresDatabase: Parsed DATABASE_URL - Host: ${uri.host}, Port: ${uri.port}, DB: $database, User: $username');
+        
+        _connection = PostgreSQLConnection(
+          uri.host,
+          uri.port,
+          database,
+          username: username,
+          password: password,
+        );
+      } else {
+        print('PostgresDatabase: DATABASE_URL not found, using fallback parameters...');
+        // Fallback to hardcoded values for development
+        final host = 'localhost'; 
+        final port = 5432;
+        final database = 'postgres';
+        final username = 'postgres';
+        final password = '';
+        
+        print('PostgresDatabase: Using fallback connection details - Host: $host, Port: $port, DB: $database, User: $username');
+        
+        _connection = PostgreSQLConnection(
+          host,
+          port, 
+          database,
+          username: username,
+          password: password,
+        );
+      }
+      
+      print('PostgresDatabase: Opening connection...');
       await _connection.open();
       _isConnected = true;
+      print('PostgresDatabase: Connection established successfully');
+      
+      print('PostgresDatabase: Creating tables if they don\'t exist...');
       await _createTables();
+      print('PostgresDatabase: Tables created/verified');
+      
+      // Check if seed data needs to be inserted
+      print('PostgresDatabase: Checking if seed data is needed...');
+      final games = await getAllGames();
+      print('PostgresDatabase: Found ${games.length} games in database');
+      
+      if (games.isEmpty) {
+        print('PostgresDatabase: No games found, seeding database with initial data...');
+        await _seedData();
+      } else {
+        print('PostgresDatabase: Data already exists, skipping seed');
+      }
     } catch (e) {
       print('PostgreSQL connection error: $e');
+      print('PostgreSQL connection error stack trace: ${StackTrace.current}');
       rethrow;
     }
   }
@@ -1070,5 +1133,436 @@ class PostgresDatabase {
     }
     
     return posts;
+  }
+  
+  // Seed data method to populate the database with initial data
+  Future<void> _seedData() async {
+    print('Seeding database with initial data...');
+    
+    // Create default user
+    final defaultUser = User(
+      id: 'user-1',
+      username: 'admin',
+      email: 'admin@guidegenie.com',
+      bio: 'Guide Genie Admin',
+      avatarUrl: 'https://ui-avatars.com/api/?name=Admin&background=random',
+      favoriteGames: [],
+      upvotedPosts: [],
+      downvotedPosts: [],
+      upvotedComments: [],
+      downvotedComments: [],
+      reputation: 100,
+      createdAt: DateTime.now(),
+      lastLogin: DateTime.now(),
+    );
+    
+    await createUser(defaultUser, 'hashed_password'); // In a real app, this would be properly hashed
+    
+    // Create games
+    final fortnite = Game(
+      id: 'game-1',
+      name: 'Fortnite',
+      description: 'A battle royale game where 100 players fight to be the last person standing.',
+      coverImageUrl: 'https://cdn2.unrealengine.com/social-image-chapter4-s3-3840x2160-d35912cc25ad.jpg',
+      developer: 'Epic Games',
+      publisher: 'Epic Games',
+      releaseDate: '2017-07-25',
+      platforms: ['PC', 'PlayStation', 'Xbox', 'Switch', 'Mobile'],
+      genres: ['Battle Royale', 'Shooter', 'Survival'],
+      rating: 4.5,
+      postCount: 0,
+      isFeatured: true,
+    );
+    
+    final leagueOfLegends = Game(
+      id: 'game-2',
+      name: 'League of Legends',
+      description: 'A team-based strategy game where two teams of five champions compete to destroy the enemy base.',
+      coverImageUrl: 'https://www.leagueoflegends.com/static/open-graph-2e582ae9fae8b0b396ca46ff21fd47a8.jpg',
+      developer: 'Riot Games',
+      publisher: 'Riot Games',
+      releaseDate: '2009-10-27',
+      platforms: ['PC', 'Mac'],
+      genres: ['MOBA', 'Strategy', 'Multiplayer'],
+      rating: 4.2,
+      postCount: 0,
+      isFeatured: true,
+    );
+    
+    final valorant = Game(
+      id: 'game-3',
+      name: 'Valorant',
+      description: 'A 5v5 character-based tactical shooter where precise gunplay meets unique agent abilities.',
+      coverImageUrl: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt3f072336e3f3ade4/63096d7be4a8c30e088e7720/Valorant_2022_E5A2_PlayVALORANT_ContentStackThumbnail_1200x625_MB01.png',
+      developer: 'Riot Games',
+      publisher: 'Riot Games',
+      releaseDate: '2020-06-02',
+      platforms: ['PC'],
+      genres: ['Tactical Shooter', 'FPS', 'Multiplayer'],
+      rating: 4.4,
+      postCount: 0,
+      isFeatured: false,
+    );
+    
+    final streetFighter = Game(
+      id: 'game-4',
+      name: 'Street Fighter 6',
+      description: 'The latest entry in the legendary fighting game franchise with new mechanics and characters.',
+      coverImageUrl: 'https://cdn.akamai.steamstatic.com/steam/apps/1364780/capsule_616x353.jpg',
+      developer: 'Capcom',
+      publisher: 'Capcom',
+      releaseDate: '2023-06-02',
+      platforms: ['PC', 'PlayStation', 'Xbox'],
+      genres: ['Fighting', 'Arcade', 'Competitive'],
+      rating: 4.7,
+      postCount: 0,
+      isFeatured: true,
+    );
+    
+    final callOfDuty = Game(
+      id: 'game-5',
+      name: 'Call of Duty: Modern Warfare III',
+      description: 'The latest installment in the Call of Duty franchise featuring both multiplayer and campaign modes.',
+      coverImageUrl: 'https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/mw3/meta-images/season-2/WZ_MWIII_S02_KEY_ART_16x9.jpg',
+      developer: 'Infinity Ward',
+      publisher: 'Activision',
+      releaseDate: '2023-11-10',
+      platforms: ['PC', 'PlayStation', 'Xbox'],
+      genres: ['FPS', 'Action', 'Multiplayer'],
+      rating: 4.1,
+      postCount: 0,
+      isFeatured: false,
+    );
+    
+    final warzone = Game(
+      id: 'game-6',
+      name: 'Call of Duty: Warzone',
+      description: 'A free-to-play battle royale game from the Call of Duty franchise.',
+      coverImageUrl: 'https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/blog/hero/mw-wz/WZ-Season-Three-Announce-TOUT.jpg',
+      developer: 'Infinity Ward',
+      publisher: 'Activision',
+      releaseDate: '2020-03-10',
+      platforms: ['PC', 'PlayStation', 'Xbox'],
+      genres: ['Battle Royale', 'FPS', 'Action'],
+      rating: 4.3,
+      postCount: 0,
+      isFeatured: false,
+    );
+    
+    final marvelRivals = Game(
+      id: 'game-7',
+      name: 'Marvel Rivals',
+      description: 'A team-based hero shooter set in the Marvel universe.',
+      coverImageUrl: 'https://cdn1.epicgames.com/offer/9ce578fa87934fa2b2cff24c6c388879/EGS_MarvelRivals_NetEaseGames_S2_1200x1600-1af611a128ddb0c059eb09e94e8dddc0',
+      developer: 'NetEase Games',
+      publisher: 'Marvel Entertainment',
+      releaseDate: '2024-07-15',
+      platforms: ['PC', 'PlayStation', 'Xbox'],
+      genres: ['Hero Shooter', 'Action', 'Multiplayer'],
+      rating: 4.6,
+      postCount: 0,
+      isFeatured: true,
+    );
+    
+    await createGame(fortnite);
+    await createGame(leagueOfLegends);
+    await createGame(valorant);
+    await createGame(streetFighter);
+    await createGame(callOfDuty);
+    await createGame(warzone);
+    await createGame(marvelRivals);
+    
+    // Create posts
+    final fortniteTierListPost = Post(
+      id: 'post-1',
+      title: 'Fortnite Season 5 Weapons Tier List',
+      content: 'Here\'s my comprehensive tier list for all weapons in Fortnite Season 5:\n\n'
+          '## S Tier\n'
+          '- Legendary Assault Rifle\n'
+          '- Legendary Pump Shotgun\n'
+          '- Legendary Sniper Rifle\n\n'
+          '## A Tier\n'
+          '- Epic Assault Rifle\n'
+          '- Epic Tactical Shotgun\n'
+          '- Legendary Rocket Launcher\n\n'
+          '## B Tier\n'
+          '- Rare Assault Rifle\n'
+          '- Epic SMG\n'
+          '- Rare Tactical Shotgun\n\n'
+          '## C Tier\n'
+          '- Common Assault Rifle\n'
+          '- Common Pistol\n'
+          '- Common SMG\n\n'
+          'Let me know your thoughts in the comments!',
+      gameId: 'game-1',
+      gameName: 'Fortnite',
+      type: 'tier_list',
+      tags: ['weapons', 'season 5', 'meta'],
+      authorId: 'user-1',
+      authorName: 'admin',
+      authorAvatarUrl: 'https://ui-avatars.com/api/?name=Admin&background=random',
+      createdAt: DateTime.now().subtract(const Duration(days: 5)),
+      updatedAt: DateTime.now().subtract(const Duration(days: 5)),
+      upvotes: 24,
+      downvotes: 3,
+      commentCount: 0,
+      isFeatured: true,
+    );
+    
+    final lolGuidePost = Post(
+      id: 'post-2',
+      title: 'ADC Role Guide: Positioning & Farming',
+      content: '# ADC Role Guide\n\n'
+          '## Introduction\n'
+          'The ADC (Attack Damage Carry) role is critical in League of Legends. Your job is to deal consistent damage in team fights and take down objectives.\n\n'
+          '## Early Game\n'
+          '- Focus on last-hitting minions for gold\n'
+          '- Stay behind your support and avoid trading alone\n'
+          '- Ward the river bush to avoid ganks\n\n'
+          '## Mid Game\n'
+          '- Rotate to mid lane for objectives\n'
+          '- Group with your team for dragon fights\n'
+          '- Continue farming side lanes when safe\n\n'
+          '## Late Game\n'
+          '- Position behind your frontline in team fights\n'
+          '- Focus the closest enemy champion\n'
+          '- Prioritize staying alive over getting kills\n\n'
+          '## Recommended Champions\n'
+          '- Caitlyn: Safe pick with long range\n'
+          '- Jinx: Great scaling and team fight presence\n'
+          '- Ezreal: Mobile and safe with poke damage\n'
+          '- Jhin: High burst damage and utility\n\n'
+          'Feel free to ask questions in the comments!',
+      gameId: 'game-2',
+      gameName: 'League of Legends',
+      type: 'guide',
+      tags: ['ADC', 'beginner', 'farming', 'positioning'],
+      authorId: 'user-1',
+      authorName: 'admin',
+      authorAvatarUrl: 'https://ui-avatars.com/api/?name=Admin&background=random',
+      createdAt: DateTime.now().subtract(const Duration(days: 10)),
+      updatedAt: DateTime.now().subtract(const Duration(days: 8)),
+      upvotes: 37,
+      downvotes: 5,
+      commentCount: 0,
+      isFeatured: true,
+    );
+    
+    final valorantAgentPost = Post(
+      id: 'post-3',
+      title: 'Valorant Agent Tier List - Post Patch 7.04',
+      content: '# Valorant Agent Tier List (Patch 7.04)\n\n'
+          '## S Tier\n'
+          '- Jett: Still the queen of mobility and entry\n'
+          '- Chamber: Top pick for holding angles and OPing\n'
+          '- Sova: Information gathering is unmatched\n\n'
+          '## A Tier\n'
+          '- Sage: Healing and wall utility remain strong\n'
+          '- Brimstone: Smokes and molly lineups are valuable\n'
+          '- Killjoy: Great for site control and retakes\n\n'
+          '## B Tier\n'
+          '- Phoenix: Decent flashes but outclassed by others\n'
+          '- Cypher: Good info but requires more setup\n'
+          '- Viper: Map-dependent but strong when used well\n\n'
+          '## C Tier\n'
+          '- Yoru: Fun but inconsistent impact\n'
+          '- Astra: Too complex for the value provided\n\n'
+          'This list is based on both pro play and high-rank competitive matches. Let me know if you disagree!',
+      gameId: 'game-3',
+      gameName: 'Valorant',
+      type: 'tier_list',
+      tags: ['agents', 'meta', 'patch 7.04'],
+      authorId: 'user-1',
+      authorName: 'admin',
+      authorAvatarUrl: 'https://ui-avatars.com/api/?name=Admin&background=random',
+      createdAt: DateTime.now().subtract(const Duration(days: 3)),
+      updatedAt: DateTime.now().subtract(const Duration(days: 3)),
+      upvotes: 15,
+      downvotes: 2,
+      commentCount: 0,
+      isFeatured: false,
+    );
+    
+    final streetFighterComboPost = Post(
+      id: 'post-4',
+      title: 'Ryu Essential Combos - Street Fighter 6',
+      content: '# Ryu Essential Combos Guide\n\n'
+          '## Basic Combos\n'
+          '- `cr.MK > Hadoken`: Basic poke into special\n'
+          '- `cr.LK > cr.LP > dp+MP`: Light confirm into medium DP\n'
+          '- `MP > DP+HP`: Hit confirm into heavy DP\n\n'
+          '## Drive Impact Combos\n'
+          '- `Drive Impact > HP > Tatsu+MK`: Basic drive impact follow-up\n'
+          '- `Drive Impact (corner) > HP > HK > DP+HP`: Corner drive impact max damage\n\n'
+          '## Drive Rush Combos\n'
+          '- `Drive Rush > MP > HP > DP+HP`: Drive rush pressure\n'
+          '- `Drive Rush > throw`: Drive rush throw mix-up\n\n'
+          '## Super Combos\n'
+          '- `cr.MK > Hadoken > Level 3 Super`: Basic super confirm\n'
+          '- `Drive Impact > HP > Level 2 Super`: High damage super combo\n\n'
+          '## Tips\n'
+          '- Practice hit-confirming cr.MK into Hadoken\n'
+          '- Use drive rush to extend combos and create pressure\n'
+          '- Level 3 super is best saved for round-ending situations\n\n'
+          'Practice these in training mode until they become muscle memory!',
+      gameId: 'game-4',
+      gameName: 'Street Fighter 6',
+      type: 'guide',
+      tags: ['Ryu', 'combos', 'beginner'],
+      authorId: 'user-1',
+      authorName: 'admin',
+      authorAvatarUrl: 'https://ui-avatars.com/api/?name=Admin&background=random',
+      createdAt: DateTime.now().subtract(const Duration(days: 15)),
+      updatedAt: DateTime.now().subtract(const Duration(days: 15)),
+      upvotes: 42,
+      downvotes: 1,
+      commentCount: 0,
+      isFeatured: true,
+    );
+    
+    final codWarLoadoutPost = Post(
+      id: 'post-5',
+      title: 'Best MW3 Meta Loadouts - Season 2',
+      content: '# Best MW3 Loadouts (Season 2)\n\n'
+          '## Assault Rifle: MCW\n'
+          '- Muzzle: Casus Brake\n'
+          '- Barrel: MCW Long Barrel\n'
+          '- Optic: Corio Eagleseye 2.5x\n'
+          '- Underbarrel: DR-6 Handstop\n'
+          '- Magazine: 40 Round Mag\n\n'
+          '## SMG: WSP Swarm\n'
+          '- Muzzle: Monolithic Suppressor\n'
+          '- Barrel: WSP Carbine Barrel\n'
+          '- Stock: WSP Factory Stock\n'
+          '- Underbarrel: XTEN Phantom Grip\n'
+          '- Rear Grip: WSP Agile Grip\n\n'
+          '## Sniper: MORS\n'
+          '- Muzzle: Sonic Suppressor\n'
+          '- Barrel: MORS-18 Heavy Barrel\n'
+          '- Optic: SP-X 80 6.6x\n'
+          '- Stock: MK3 Rifle Stock\n'
+          '- Bolt: Quick Bolt\n\n'
+          '## Perks\n'
+          '- Perk 1: Double Time\n'
+          '- Perk 2: Fast Hands\n'
+          '- Perk 3: Tracker\n\n'
+          '## Equipment\n'
+          '- Tactical: Stun Grenade\n'
+          '- Lethal: Semtex\n'
+          '- Field Upgrade: Dead Silence\n\n'
+          'These loadouts are optimized for both multiplayer and Warzone. Let me know your favorite combos!',
+      gameId: 'game-5',
+      gameName: 'Call of Duty: Modern Warfare III',
+      type: 'loadout',
+      tags: ['loadouts', 'season 2', 'meta'],
+      authorId: 'user-1',
+      authorName: 'admin',
+      authorAvatarUrl: 'https://ui-avatars.com/api/?name=Admin&background=random',
+      createdAt: DateTime.now().subtract(const Duration(days: 7)),
+      updatedAt: DateTime.now().subtract(const Duration(days: 6)),
+      upvotes: 28,
+      downvotes: 4,
+      commentCount: 0,
+      isFeatured: false,
+    );
+    
+    final warzoneStrategyPost = Post(
+      id: 'post-6',
+      title: 'Warzone Rebirth Island - Pro Rotation Strategies',
+      content: '# Warzone Rebirth Island Rotation Guide\n\n'
+          '## Best Drop Locations\n'
+          '- **Prison**: High risk, high reward. Lots of loot and contracts.\n'
+          '- **Control Center**: Central location with good positioning.\n'
+          '- **Harbor**: Quieter drop with decent loot and escape options.\n\n'
+          '## Early Game Strategy\n'
+          '1. Secure a loadout drop ASAP\n'
+          '2. Complete contracts for cash and intel\n'
+          '3. Position for the first circle\n\n'
+          '## Mid Game Rotations\n'
+          '- **From Prison**: Rotate through Chemical Engineering or Headquarters\n'
+          '- **From Control**: Move to Security Area or Bioweapons\n'
+          '- **From Harbor**: Push through Decon Zone or Factory\n\n'
+          '## Late Game\n'
+          '- Prioritize high ground whenever possible\n'
+          '- Use gas masks to make plays through the gas\n'
+          '- Hold power positions in the final circles\n\n'
+          '## Advanced Tips\n'
+          '- Use balloons for quick repositioning\n'
+          '- Save a precision airstrike for the final circle\n'
+          '- Always have a self-revive in late game\n\n'
+          'These strategies are based on analysis of top Warzone players and tournament winners. Adapt them to your playstyle for the best results!',
+      gameId: 'game-6',
+      gameName: 'Call of Duty: Warzone',
+      type: 'strategy',
+      tags: ['Rebirth Island', 'rotations', 'advanced'],
+      authorId: 'user-1',
+      authorName: 'admin',
+      authorAvatarUrl: 'https://ui-avatars.com/api/?name=Admin&background=random',
+      createdAt: DateTime.now().subtract(const Duration(days: 2)),
+      updatedAt: DateTime.now().subtract(const Duration(days: 2)),
+      upvotes: 19,
+      downvotes: 2,
+      commentCount: 0,
+      isFeatured: false,
+    );
+    
+    final marvelRivalsPost = Post(
+      id: 'post-7',
+      title: 'Marvel Rivals Beta - Character Tier List',
+      content: '# Marvel Rivals Beta - Character Tier List\n\n'
+          '## S Tier\n'
+          '- **Iron Man**: Incredible mobility and damage output\n'
+          '- **Doctor Strange**: Unmatched utility and crowd control\n'
+          '- **Black Panther**: Perfect balance of damage and survivability\n\n'
+          '## A Tier\n'
+          '- **Spider-Man**: Great mobility but limited team utility\n'
+          '- **Hulk**: Massive damage but predictable\n'
+          '- **Magneto**: Strong control capabilities\n'
+          '- **Star-Lord**: Good damage but requires team support\n\n'
+          '## B Tier\n'
+          '- **Rocket Raccoon**: Situational but can be devastating\n'
+          '- **Storm**: Good area control but vulnerable\n'
+          '- **Loki**: Tricky to master but rewarding\n\n'
+          '## C Tier\n'
+          '- **Mantis**: Limited damage output\n'
+          '- **Groot**: Too dependent on team coordination\n\n'
+          '## Best Team Compositions\n'
+          '1. Iron Man, Doctor Strange, Black Panther\n'
+          '2. Spider-Man, Hulk, Magneto\n'
+          '3. Star-Lord, Black Panther, Storm\n\n'
+          'This tier list is based on the closed beta gameplay. The meta will likely shift with balance patches and as players discover new strategies.',
+      gameId: 'game-7',
+      gameName: 'Marvel Rivals',
+      type: 'tier_list',
+      tags: ['characters', 'beta', 'team comps'],
+      authorId: 'user-1',
+      authorName: 'admin',
+      authorAvatarUrl: 'https://ui-avatars.com/api/?name=Admin&background=random',
+      createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      updatedAt: DateTime.now().subtract(const Duration(days: 1)),
+      upvotes: 31,
+      downvotes: 3,
+      commentCount: 0,
+      isFeatured: true,
+    );
+    
+    await createPost(fortniteTierListPost);
+    await createPost(lolGuidePost);
+    await createPost(valorantAgentPost);
+    await createPost(streetFighterComboPost);
+    await createPost(codWarLoadoutPost);
+    await createPost(warzoneStrategyPost);
+    await createPost(marvelRivalsPost);
+    
+    // Update game post counts
+    await updateGamePostCount('game-1', 1); // Fortnite
+    await updateGamePostCount('game-2', 1); // League of Legends
+    await updateGamePostCount('game-3', 1); // Valorant
+    await updateGamePostCount('game-4', 1); // Street Fighter 6
+    await updateGamePostCount('game-5', 1); // Call of Duty
+    await updateGamePostCount('game-6', 1); // Warzone
+    await updateGamePostCount('game-7', 1); // Marvel Rivals
+    
+    print('Database seeding completed successfully!');
   }
 }

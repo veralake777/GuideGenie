@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:guide_genie/models/post.dart';
+import 'package:guide_genie/models/comment.dart';
 import 'package:guide_genie/providers/auth_provider.dart';
 import 'package:guide_genie/providers/post_provider.dart';
 import 'package:guide_genie/utils/constants.dart';

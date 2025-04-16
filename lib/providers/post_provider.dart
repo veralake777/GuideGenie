@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:guide_genie/models/post.dart';
+import 'package:guide_genie/models/comment.dart';
 import 'package:guide_genie/services/api_service.dart';
 
 class PostProvider with ChangeNotifier {
@@ -193,6 +194,8 @@ class PostProvider with ChangeNotifier {
         createdAt: now,
         upvotes: 0,
         downvotes: 0,
+        parentCommentId: null,
+        childCommentIds: const [],
       );
       
       await _apiService.createComment(comment.toJson());

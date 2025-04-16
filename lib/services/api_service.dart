@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:guide_genie/models/game.dart';
 import 'package:guide_genie/models/post.dart';
 import 'package:guide_genie/models/user.dart';
+import 'package:guide_genie/models/comment.dart';
 import 'package:guide_genie/utils/constants.dart';
 import 'package:guide_genie/services/postgres_database.dart';
 import 'package:uuid/uuid.dart';
@@ -499,8 +500,21 @@ class ApiService {
 
   // Comment methods
   Future<List<Map<String, dynamic>>> getComments(String postId) async {
-    final comments = await _database.getCommentsByPost(postId);
-    return comments.map((comment) => comment.toJson()).toList();
+    try {
+      final comments = await _database.getCommentsByPost(postId);
+      
+      final List<Map<String, dynamic>> result = [];
+      for (final comment in comments) {
+        if (comment != null) {  
+          result.add(comment.toJson());
+        }
+      }
+      
+      return result;
+    } catch (e) {
+      print('Error in getComments: $e');
+      return [];
+    }
   }
 
   Future<void> createComment(Map<String, dynamic> commentData) async {

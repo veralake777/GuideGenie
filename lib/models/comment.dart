@@ -3,6 +3,7 @@ class Comment {
   final String postId;
   final String authorId;
   final String authorName;
+  final String authorAvatarUrl;
   final String content;
   final DateTime createdAt;
   final int upvotes;
@@ -15,6 +16,7 @@ class Comment {
     required this.postId,
     required this.authorId,
     required this.authorName,
+    required this.authorAvatarUrl,
     required this.content,
     required this.createdAt,
     this.upvotes = 0,
@@ -29,6 +31,7 @@ class Comment {
       postId: json['postId'] as String,
       authorId: json['authorId'] as String,
       authorName: json['authorName'] as String,
+      authorAvatarUrl: json['authorAvatarUrl'] as String? ?? '',
       content: json['content'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       upvotes: json['upvotes'] as int? ?? 0,
@@ -44,6 +47,7 @@ class Comment {
       'postId': postId,
       'authorId': authorId,
       'authorName': authorName,
+      'authorAvatarUrl': authorAvatarUrl,
       'content': content,
       'createdAt': createdAt.toIso8601String(),
       'upvotes': upvotes,
@@ -58,6 +62,7 @@ class Comment {
     String? postId,
     String? authorId,
     String? authorName,
+    String? authorAvatarUrl,
     String? content,
     DateTime? createdAt,
     int? upvotes,
@@ -70,6 +75,7 @@ class Comment {
       postId: postId ?? this.postId,
       authorId: authorId ?? this.authorId,
       authorName: authorName ?? this.authorName,
+      authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
       content: content ?? this.content,
       createdAt: createdAt ?? this.createdAt,
       upvotes: upvotes ?? this.upvotes,

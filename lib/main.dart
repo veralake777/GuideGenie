@@ -23,13 +23,26 @@ void main() async {
   // Load environment variables
   await dotenv.load(fileName: '.env');
   
+  // Print environment variables for debugging
+  print('DATABASE_URL: ${dotenv.env['DATABASE_URL'] ?? 'Not set'}');
+  
   // Initialize PostgreSQL database connection
   final db = PostgresDatabase();
   try {
+    print('Initializing database connection...');
     await db.connect();
     print('Connected to PostgreSQL database successfully');
+    
+    // Explicitly check database state
+    final games = await db.getAllGames();
+    print('Initial database check: Found ${games.length} games in the database');
+    
+    // Quick check of API service to get posts
+    final users = await db.getAllUsers();
+    print('Initial database check: Found ${users.length} users in the database');
   } catch (e) {
     print('Failed to connect to PostgreSQL database: $e');
+    print('Stack trace: ${StackTrace.current}');
   }
   
   runApp(const MyApp());
