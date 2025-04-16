@@ -25,26 +25,44 @@ class PostgresDatabase {
       // Load .env file
       await dotenv.load();
       
-      // Directly use the environment variable from Replit
-      String? databaseUrl = const String.fromEnvironment('DATABASE_URL');
+      // Variables for connection
+      String? databaseUrl;
+      String? pgUser;
+      String? pgPassword;
+      String? pgHost;
+      String? pgDatabase;
+      String? pgPort;
       
-      // Check if we can get DATABASE_URL from .env file if not found in environment
-      if (databaseUrl == null || databaseUrl.isEmpty) {
-        print('PostgresDatabase: DATABASE_URL from environment is empty, trying dotenv...');
+      // Directly use the environment variable from Replit
+      // Try to get DATABASE_URL from environment variables
+      try {
+        databaseUrl = const String.fromEnvironment('DATABASE_URL');
+        
+        // Check if we can get DATABASE_URL from .env file if not found in environment
+        if (databaseUrl == null || databaseUrl.isEmpty) {
+          print('PostgresDatabase: DATABASE_URL from environment is empty, trying dotenv...');
+          databaseUrl = dotenv.env['DATABASE_URL'];
+        }
+      } catch (e) {
+        print('PostgresDatabase: Error getting DATABASE_URL: $e');
         databaseUrl = dotenv.env['DATABASE_URL'];
       }
       
       // For security, mask the password in logs
-      if (databaseUrl != null && databaseUrl.isNotEmpty && databaseUrl != '${DATABASE_URL}') {
+      if (databaseUrl != null && databaseUrl.isNotEmpty) {
         print('PostgresDatabase: Using database URL: ${databaseUrl.replaceAll(RegExp(r'postgres://[^:]+:[^@]+@'), 'postgres://user:password@')}');
       }
       
       // Try connecting using the direct environment variables first (Replit provides these)
-      String? pgUser = const String.fromEnvironment('PGUSER');
-      String? pgPassword = const String.fromEnvironment('PGPASSWORD');
-      String? pgHost = const String.fromEnvironment('PGHOST');
-      String? pgDatabase = const String.fromEnvironment('PGDATABASE');
-      String? pgPort = const String.fromEnvironment('PGPORT');
+      try {
+        pgUser = const String.fromEnvironment('PGUSER');
+        pgPassword = const String.fromEnvironment('PGPASSWORD');
+        pgHost = const String.fromEnvironment('PGHOST');
+        pgDatabase = const String.fromEnvironment('PGDATABASE');
+        pgPort = const String.fromEnvironment('PGPORT');
+      } catch (e) {
+        print('PostgresDatabase: Error getting PG environment variables: $e');
+      }
       
       // If the environment variables are not set, try to get them from dotenv
       if (pgHost == null || pgHost.isEmpty) {
