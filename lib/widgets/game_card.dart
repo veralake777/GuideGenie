@@ -1,24 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:guide_genie/models/game.dart';
+import 'package:guide_genie/utils/constants.dart';
 
 class GameCard extends StatelessWidget {
   final Game game;
-  final VoidCallback onTap;
-
+  final bool isCompact;
+  
   const GameCard({
     Key? key,
     required this.game,
-    required this.onTap,
+    this.isCompact = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return InkWell(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          AppConstants.gameDetailsRoute,
+          arguments: {'gameId': game.id},
+        );
+      },
+      borderRadius: BorderRadius.circular(AppConstants.borderRadiusL),
       child: Container(
+        width: isCompact ? 130 : 280,
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppConstants.paddingS,
+          vertical: AppConstants.paddingS,
+        ),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppConstants.borderRadiusL),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -27,63 +40,20 @@ class GameCard extends StatelessWidget {
             ),
           ],
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Game logo
-            Expanded(
-              flex: 3,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: FutureBuilder(
-                  future: _checkLogoExists(game.logoUrl),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.data == true) {
-                      // Try to load the SVG logo
-                      try {
-                        return Image.asset(
-                          game.logoUrl,
-                          fit: BoxFit.contain,
-                        );
-                      } catch (e) {
-                        return _buildFallbackLogo(context);
-                      }
-                    } else {
-                      return _buildFallbackLogo(context);
-                    }
-                  },
-                ),
-              ),
-            ),
-            
-            // Game name
-            Expanded(
-              flex: 1,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(12),
-                    bottomRight: Radius.circular(12),
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    game.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+            _buildGameCover(context),
+            Padding(
+              padding: const EdgeInsets.all(AppConstants.paddingM),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildGameName(),
+                  const SizedBox(height: AppConstants.paddingXS),
+                  _buildGameDetails(),
+                ],
               ),
             ),
           ],
@@ -91,31 +61,101 @@ class GameCard extends StatelessWidget {
       ),
     );
   }
-  
-  Widget _buildFallbackLogo(BuildContext context) {
-    // Create a fallback logo with the first letter of the game name
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(
-          game.name.substring(0, 1).toUpperCase(),
-          style: TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
+
+  Widget _buildGameCover(BuildContext context) {
+    return Stack(
+      children: [
+        // Game Cover Image
+        Container(
+          height: 100,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+          ),
+          child: Image.network(
+            game.coverImageUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Center(
+                child: Icon(
+                  Icons.image_not_supported,
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                ),
+              );
+            },
           ),
         ),
+        // Featured Badge
+        if (game.isFeatured)
+          Positioned(
+            top: AppConstants.paddingS,
+            right: AppConstants.paddingS,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.paddingS,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondary,
+                borderRadius: BorderRadius.circular(AppConstants.borderRadiusS),
+              ),
+              child: Text(
+                'Featured',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSecondary,
+                  fontSize: AppConstants.fontSizeXS,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildGameName() {
+    return Text(
+      game.name,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: AppConstants.fontSizeM,
       ),
     );
   }
 
-  Future<bool> _checkLogoExists(String assetPath) async {
-    // In a real app, we would check if the asset exists
-    // For this implementation, we'll always return true
-    // and rely on the error handling in the build method
-    return Future.value(true);
+  Widget _buildGameDetails() {
+    return Row(
+      children: [
+        // Rating
+        Icon(
+          Icons.star,
+          size: AppConstants.iconSizeS,
+          color: Colors.amber,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          game.rating.toString(),
+          style: const TextStyle(
+            fontSize: AppConstants.fontSizeS,
+          ),
+        ),
+        const SizedBox(width: AppConstants.paddingM),
+        // Guide Count
+        Icon(
+          Icons.book,
+          size: AppConstants.iconSizeS,
+          color: Colors.grey,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '${game.postCount} guides',
+          style: const TextStyle(
+            fontSize: AppConstants.fontSizeS,
+          ),
+        ),
+      ],
+    );
   }
 }

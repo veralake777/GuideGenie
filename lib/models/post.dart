@@ -1,101 +1,215 @@
+enum GuideType {
+  strategy,
+  tierList,
+  loadout,
+  beginnerTips,
+  advancedTips,
+  metaAnalysis,
+  update,
+  news,
+  other
+}
+
 class Post {
   final String id;
-  final String gameId;
   final String title;
+  final String content;
+  final String gameId;
+  final String gameName;
+  final GuideType type;
+  final List<String> tags;
   final String authorId;
   final String authorName;
+  final String authorAvatarUrl;
   final DateTime createdAt;
-  final String content;
-  final List<String> mediaUrls;
-  final List<String> tags;
+  final DateTime updatedAt;
   final int upvotes;
   final int downvotes;
-  final List<String> commentIds;
-  final Map<String, dynamic>? metadata; // For game-specific data like tier lists
+  final int commentCount;
+  final bool isFeatured;
 
   Post({
     required this.id,
-    required this.gameId,
     required this.title,
+    required this.content,
+    required this.gameId,
+    required this.gameName,
+    required this.type,
+    required this.tags,
     required this.authorId,
     required this.authorName,
+    required this.authorAvatarUrl,
     required this.createdAt,
-    required this.content,
-    this.mediaUrls = const [],
-    this.tags = const [],
-    this.upvotes = 0,
-    this.downvotes = 0,
-    this.commentIds = const [],
-    this.metadata,
+    required this.updatedAt,
+    required this.upvotes,
+    required this.downvotes,
+    required this.commentCount,
+    this.isFeatured = false,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      id: json['id'] as String,
-      gameId: json['gameId'] as String,
-      title: json['title'] as String,
-      authorId: json['authorId'] as String,
-      authorName: json['authorName'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      content: json['content'] as String,
-      mediaUrls: List<String>.from(json['mediaUrls'] ?? []),
-      tags: List<String>.from(json['tags'] ?? []),
-      upvotes: json['upvotes'] as int? ?? 0,
-      downvotes: json['downvotes'] as int? ?? 0,
-      commentIds: List<String>.from(json['commentIds'] ?? []),
-      metadata: json['metadata'] as Map<String, dynamic>?,
+      id: json['id'],
+      title: json['title'],
+      content: json['content'],
+      gameId: json['gameId'],
+      gameName: json['gameName'],
+      type: _parseGuideType(json['type']),
+      tags: List<String>.from(json['tags']),
+      authorId: json['authorId'],
+      authorName: json['authorName'],
+      authorAvatarUrl: json['authorAvatarUrl'] ?? '',
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: DateTime.parse(json['updatedAt']),
+      upvotes: json['upvotes'],
+      downvotes: json['downvotes'],
+      commentCount: json['commentCount'],
+      isFeatured: json['isFeatured'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'gameId': gameId,
       'title': title,
+      'content': content,
+      'gameId': gameId,
+      'gameName': gameName,
+      'type': type.toString().split('.').last,
+      'tags': tags,
       'authorId': authorId,
       'authorName': authorName,
+      'authorAvatarUrl': authorAvatarUrl,
       'createdAt': createdAt.toIso8601String(),
-      'content': content,
-      'mediaUrls': mediaUrls,
-      'tags': tags,
+      'updatedAt': updatedAt.toIso8601String(),
       'upvotes': upvotes,
       'downvotes': downvotes,
-      'commentIds': commentIds,
-      'metadata': metadata,
+      'commentCount': commentCount,
+      'isFeatured': isFeatured,
     };
+  }
+
+  static GuideType _parseGuideType(String typeStr) {
+    try {
+      return GuideType.values.firstWhere(
+        (type) => type.toString().split('.').last == typeStr,
+      );
+    } catch (e) {
+      return GuideType.other;
+    }
   }
 
   Post copyWith({
     String? id,
-    String? gameId,
     String? title,
+    String? content,
+    String? gameId,
+    String? gameName,
+    GuideType? type,
+    List<String>? tags,
     String? authorId,
     String? authorName,
+    String? authorAvatarUrl,
     DateTime? createdAt,
-    String? content,
-    List<String>? mediaUrls,
-    List<String>? tags,
+    DateTime? updatedAt,
     int? upvotes,
     int? downvotes,
-    List<String>? commentIds,
-    Map<String, dynamic>? metadata,
+    int? commentCount,
+    bool? isFeatured,
   }) {
     return Post(
       id: id ?? this.id,
-      gameId: gameId ?? this.gameId,
       title: title ?? this.title,
+      content: content ?? this.content,
+      gameId: gameId ?? this.gameId,
+      gameName: gameName ?? this.gameName,
+      type: type ?? this.type,
+      tags: tags ?? this.tags,
       authorId: authorId ?? this.authorId,
       authorName: authorName ?? this.authorName,
+      authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
       createdAt: createdAt ?? this.createdAt,
-      content: content ?? this.content,
-      mediaUrls: mediaUrls ?? this.mediaUrls,
-      tags: tags ?? this.tags,
+      updatedAt: updatedAt ?? this.updatedAt,
       upvotes: upvotes ?? this.upvotes,
       downvotes: downvotes ?? this.downvotes,
-      commentIds: commentIds ?? this.commentIds,
-      metadata: metadata ?? this.metadata,
+      commentCount: commentCount ?? this.commentCount,
+      isFeatured: isFeatured ?? this.isFeatured,
+    );
+  }
+}
+
+class Comment {
+  final String id;
+  final String postId;
+  final String content;
+  final String authorId;
+  final String authorName;
+  final String authorAvatarUrl;
+  final DateTime createdAt;
+  final int upvotes;
+  final int downvotes;
+
+  Comment({
+    required this.id,
+    required this.postId,
+    required this.content,
+    required this.authorId,
+    required this.authorName,
+    required this.authorAvatarUrl,
+    required this.createdAt,
+    required this.upvotes,
+    required this.downvotes,
+  });
+
+  factory Comment.fromJson(Map<String, dynamic> json) {
+    return Comment(
+      id: json['id'],
+      postId: json['postId'],
+      content: json['content'],
+      authorId: json['authorId'],
+      authorName: json['authorName'],
+      authorAvatarUrl: json['authorAvatarUrl'] ?? '',
+      createdAt: DateTime.parse(json['createdAt']),
+      upvotes: json['upvotes'],
+      downvotes: json['downvotes'],
     );
   }
 
-  int get voteScore => upvotes - downvotes;
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'postId': postId,
+      'content': content,
+      'authorId': authorId,
+      'authorName': authorName,
+      'authorAvatarUrl': authorAvatarUrl,
+      'createdAt': createdAt.toIso8601String(),
+      'upvotes': upvotes,
+      'downvotes': downvotes,
+    };
+  }
+
+  Comment copyWith({
+    String? id,
+    String? postId,
+    String? content,
+    String? authorId,
+    String? authorName,
+    String? authorAvatarUrl,
+    DateTime? createdAt,
+    int? upvotes,
+    int? downvotes,
+  }) {
+    return Comment(
+      id: id ?? this.id,
+      postId: postId ?? this.postId,
+      content: content ?? this.content,
+      authorId: authorId ?? this.authorId,
+      authorName: authorName ?? this.authorName,
+      authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
+      createdAt: createdAt ?? this.createdAt,
+      upvotes: upvotes ?? this.upvotes,
+      downvotes: downvotes ?? this.downvotes,
+    );
+  }
 }

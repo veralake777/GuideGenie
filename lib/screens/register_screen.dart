@@ -3,29 +3,34 @@ import 'package:provider/provider.dart';
 import 'package:guide_genie/providers/auth_provider.dart';
 import 'package:guide_genie/utils/constants.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({Key? key}) : super(key: key);
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _RegisterScreenState createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   String? _errorMessage;
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
+  Future<void> _register() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -35,12 +40,13 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
 
+    final username = _usernameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.login(email, password);
+      final success = await authProvider.register(username, email, password);
 
       if (success) {
         if (!mounted) return;
@@ -51,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         setState(() {
-          _errorMessage = authProvider.errorMessage ?? 'Login failed. Please try again.';
+          _errorMessage = authProvider.errorMessage ?? 'Registration failed. Please try again.';
           _isLoading = false;
         });
       }
@@ -79,11 +85,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 _buildForm(),
                 if (_errorMessage != null) _buildErrorMessage(),
                 const SizedBox(height: AppConstants.paddingL),
-                _buildLoginButton(),
+                _buildRegisterButton(),
                 const SizedBox(height: AppConstants.paddingL),
-                _buildRegisterLink(),
-                const SizedBox(height: AppConstants.paddingXL),
-                if (!_isLoading) _buildGuestButton(),
+                _buildLoginLink(),
               ],
             ),
           ),
@@ -102,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: AppConstants.paddingM),
         Text(
-          AppConstants.appName,
+          'Create Account',
           style: TextStyle(
             fontSize: AppConstants.fontSizeXXL,
             fontWeight: FontWeight.bold,
@@ -111,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: AppConstants.paddingXS),
         Text(
-          AppConstants.appTagline,
+          'Join Guide Genie and create your own guides',
           style: TextStyle(
             fontSize: AppConstants.fontSizeM,
             color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
@@ -129,6 +133,25 @@ class _LoginScreenState extends State<LoginScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextFormField(
+            controller: _usernameController,
+            decoration: const InputDecoration(
+              labelText: 'Username',
+              prefixIcon: Icon(Icons.person),
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a username';
+              }
+              if (value.length < 3) {
+                return 'Username must be at least 3 characters';
+              }
+              return null;
+            },
+            enabled: !_isLoading,
+          ),
+          const SizedBox(height: AppConstants.paddingM),
+          TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(
@@ -140,7 +163,6 @@ class _LoginScreenState extends State<LoginScreen> {
               if (value == null || value.isEmpty) {
                 return 'Please enter your email';
               }
-              // Simple email validation
               if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                 return 'Please enter a valid email';
               }
@@ -169,10 +191,40 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter your password';
+                return 'Please enter a password';
               }
               if (value.length < 6) {
                 return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
+            enabled: !_isLoading,
+          ),
+          const SizedBox(height: AppConstants.paddingM),
+          TextFormField(
+            controller: _confirmPasswordController,
+            obscureText: _obscureConfirmPassword,
+            decoration: InputDecoration(
+              labelText: 'Confirm Password',
+              prefixIcon: const Icon(Icons.lock_outline),
+              border: const OutlineInputBorder(),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureConfirmPassword = !_obscureConfirmPassword;
+                  });
+                },
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please confirm your password';
+              }
+              if (value != _passwordController.text) {
+                return 'Passwords do not match';
               }
               return null;
             },
@@ -197,9 +249,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget _buildRegisterButton() {
     return ElevatedButton(
-      onPressed: _isLoading ? null : _login,
+      onPressed: _isLoading ? null : _register,
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingM),
         shape: RoundedRectangleBorder(
@@ -216,7 +268,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             )
           : const Text(
-              'Log In',
+              'Register',
               style: TextStyle(
                 fontSize: AppConstants.fontSizeL,
                 fontWeight: FontWeight.bold,
@@ -225,12 +277,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildRegisterLink() {
+  Widget _buildLoginLink() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Don\'t have an account?',
+          'Already have an account?',
           style: TextStyle(
             color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
           ),
@@ -241,25 +293,12 @@ class _LoginScreenState extends State<LoginScreen> {
               : () {
                   Navigator.pushReplacementNamed(
                     context,
-                    AppConstants.registerRoute,
+                    AppConstants.loginRoute,
                   );
                 },
-          child: const Text('Register'),
+          child: const Text('Log In'),
         ),
       ],
-    );
-  }
-
-  Widget _buildGuestButton() {
-    return TextButton(
-      onPressed: () {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppConstants.homeRoute,
-          (route) => false,
-        );
-      },
-      child: const Text('Continue as Guest'),
     );
   }
 }

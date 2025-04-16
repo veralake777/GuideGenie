@@ -1,40 +1,61 @@
-enum GamePriority {
-  p0, // Higher priority games
-  p1, // Medium priority games
-  p2, // Lower priority games
+enum GameCategory {
+  action,
+  adventure,
+  rpg,
+  strategy,
+  sports,
+  shooter,
+  moba,
+  mmo,
+  fighting,
+  battle_royale,
+  racing,
+  other
 }
 
 class Game {
   final String id;
   final String name;
-  final String logoUrl;
-  final GamePriority priority;
-  final String? description;
-  final String? currentVersion;
-  final String? currentSeason;
-  final List<String> categories; // For tagging system
+  final String description;
+  final String coverImageUrl;
+  final String developer;
+  final String publisher;
+  final String releaseDate;
+  final List<String> platforms;
+  final List<String> genres;
+  final double rating;
+  final int postCount;
+  final bool isFeatured;
 
   Game({
     required this.id,
     required this.name,
-    required this.logoUrl,
-    required this.priority,
-    this.description,
-    this.currentVersion,
-    this.currentSeason,
-    this.categories = const [],
+    required this.description,
+    required this.coverImageUrl,
+    required this.developer,
+    required this.publisher,
+    required this.releaseDate,
+    required this.platforms,
+    required this.genres,
+    required this.rating,
+    required this.postCount,
+    this.isFeatured = false,
   });
 
   factory Game.fromJson(Map<String, dynamic> json) {
     return Game(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      logoUrl: json['logoUrl'] as String,
-      priority: _getPriorityFromString(json['priority'] as String),
-      description: json['description'] as String?,
-      currentVersion: json['currentVersion'] as String?,
-      currentSeason: json['currentSeason'] as String?,
-      categories: List<String>.from(json['categories'] ?? []),
+      id: json['id'],
+      name: json['name'],
+      description: json['description'],
+      coverImageUrl: json['coverImageUrl'],
+      developer: json['developer'],
+      publisher: json['publisher'],
+      releaseDate: json['releaseDate'],
+      platforms: List<String>.from(json['platforms']),
+      genres: List<String>.from(json['genres']),
+      rating: json['rating'].toDouble(),
+      postCount: json['postCount'],
+      isFeatured: json['isFeatured'] ?? false,
     );
   }
 
@@ -42,25 +63,46 @@ class Game {
     return {
       'id': id,
       'name': name,
-      'logoUrl': logoUrl,
-      'priority': priority.toString().split('.').last,
       'description': description,
-      'currentVersion': currentVersion,
-      'currentSeason': currentSeason,
-      'categories': categories,
+      'coverImageUrl': coverImageUrl,
+      'developer': developer,
+      'publisher': publisher,
+      'releaseDate': releaseDate,
+      'platforms': platforms,
+      'genres': genres,
+      'rating': rating,
+      'postCount': postCount,
+      'isFeatured': isFeatured,
     };
   }
 
-  static GamePriority _getPriorityFromString(String priorityStr) {
-    switch (priorityStr.toLowerCase()) {
-      case 'p0':
-        return GamePriority.p0;
-      case 'p1':
-        return GamePriority.p1;
-      case 'p2':
-        return GamePriority.p2;
-      default:
-        return GamePriority.p1;
-    }
+  Game copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? coverImageUrl,
+    String? developer,
+    String? publisher,
+    String? releaseDate,
+    List<String>? platforms,
+    List<String>? genres,
+    double? rating,
+    int? postCount,
+    bool? isFeatured,
+  }) {
+    return Game(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      developer: developer ?? this.developer,
+      publisher: publisher ?? this.publisher,
+      releaseDate: releaseDate ?? this.releaseDate,
+      platforms: platforms ?? this.platforms,
+      genres: genres ?? this.genres,
+      rating: rating ?? this.rating,
+      postCount: postCount ?? this.postCount,
+      isFeatured: isFeatured ?? this.isFeatured,
+    );
   }
 }

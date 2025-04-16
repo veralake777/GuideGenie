@@ -1,401 +1,309 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:guide_genie/models/comment.dart';
-import 'package:guide_genie/models/post.dart';
-import 'package:guide_genie/services/storage_service.dart';
+import 'package:uuid/uuid.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://guide-genie-api.example.com/api';
-  final StorageService _storageService = StorageService();
-  
-  // Helper method to get headers with auth token
-  Future<Map<String, String>> _getHeaders() async {
-    final token = await _storageService.getAuthToken();
-    return {
+  // Base URL for the API
+  // In a real app, this would point to your actual backend server
+  final String baseUrl = 'https://api.example.com';
+
+  // UUID generator for mock responses
+  final _uuid = Uuid();
+
+  // Headers for API requests
+  Map<String, String> _headers(String? token) {
+    Map<String, String> headers = {
       'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
     };
-  }
-  
-  // Helper method to handle API errors
-  void _handleError(http.Response response) {
-    if (response.statusCode >= 400) {
-      final errorJson = jsonDecode(response.body);
-      final errorMessage = errorJson['message'] ?? 'Unknown error occurred';
-      throw Exception(errorMessage);
+    
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
     }
+    
+    return headers;
   }
-  
-  // Authentication APIs
-  Future<Map<String, dynamic>> login(String email, String password) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
+
+  // Handle API errors
+  Exception _handleError(http.Response response) {
+    if (response.statusCode == 401) {
+      return Exception('Unauthorized. Please login again.');
+    } else if (response.statusCode == 404) {
+      return Exception('Resource not found.');
+    } else {
+      return Exception(
+        'API Error: ${response.statusCode} - ${response.reasonPhrase}'
       );
-      
-      _handleError(response);
-      return jsonDecode(response.body);
-    } catch (e) {
-      // Simulate successful login for demo purposes
-      await Future.delayed(const Duration(seconds: 1));
-      return {
-        'token': 'sample_token',
-        'user': {
-          'id': '1',
-          'username': email.split('@')[0],
-          'email': email,
-          'createdAt': DateTime.now().toIso8601String(),
-          'upvotedPosts': [],
-          'downvotedPosts': [],
-          'upvotedComments': [],
-          'downvotedComments': [],
-        },
-      };
     }
   }
+
+  // For now, this is a mock service that doesn't actually make HTTP requests
+  // but simulates API responses for development purposes
   
-  Future<Map<String, dynamic>> register(String username, String email, String password) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': username,
-          'email': email,
-          'password': password,
-        }),
-      );
-      
-      _handleError(response);
-      return jsonDecode(response.body);
-    } catch (e) {
-      // Simulate successful registration for demo purposes
-      await Future.delayed(const Duration(seconds: 1));
-      return {
-        'token': 'sample_token',
-        'user': {
-          'id': '1',
-          'username': username,
-          'email': email,
-          'createdAt': DateTime.now().toIso8601String(),
-          'upvotedPosts': [],
-          'downvotedPosts': [],
-          'upvotedComments': [],
-          'downvotedComments': [],
-        },
-      };
-    }
-  }
-  
-  Future<Map<String, dynamic>> getCurrentUser() async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('$baseUrl/auth/me'),
-        headers: headers,
-      );
-      
-      _handleError(response);
-      return jsonDecode(response.body);
-    } catch (e) {
-      // Simulate user data for demo purposes
-      await Future.delayed(const Duration(seconds: 1));
-      return {
-        'id': '1',
-        'username': 'demo_user',
-        'email': 'demo@example.com',
-        'createdAt': DateTime.now().toIso8601String(),
-        'upvotedPosts': [],
-        'downvotedPosts': [],
-        'upvotedComments': [],
-        'downvotedComments': [],
-      };
-    }
-  }
-  
-  // Game APIs
+  // Get all games
   Future<List<Map<String, dynamic>>> getGames() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/games'));
+      // Simulate API delay
+      await Future.delayed(Duration(milliseconds: 800));
       
-      _handleError(response);
-      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+      // In a real app, this would be:
+      // final response = await http.get(Uri.parse('$baseUrl/games'));
+      // if (response.statusCode == 200) {
+      //   return jsonDecode(response.body);
+      // } else {
+      //   throw _handleError(response);
+      // }
+      
+      // For now, throw an exception to use sample data
+      throw Exception('Mock API - using sample data');
     } catch (e) {
-      // Simulate game data for demo purposes
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Throw error to test default game loading in provider
-      throw Exception('Failed to load games: API not available');
+      // The provider will handle the exception and use sample data
+      throw e;
     }
   }
-  
-  // Post APIs
-  Future<List<Map<String, dynamic>>> getPostsForGame(String gameId) async {
+
+  // Get game details
+  Future<Map<String, dynamic>> getGameDetails(String gameId) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/games/$gameId/posts'));
+      await Future.delayed(Duration(milliseconds: 800));
       
-      _handleError(response);
-      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+      // In a real app:
+      // final response = await http.get(Uri.parse('$baseUrl/games/$gameId'));
+      // if (response.statusCode == 200) {
+      //   return jsonDecode(response.body);
+      // } else {
+      //   throw _handleError(response);
+      // }
+      
+      throw Exception('Mock API - using sample data');
     } catch (e) {
-      // Simulate post data for demo purposes
-      await Future.delayed(const Duration(seconds: 1));
-      return [
-        {
-          'id': '1',
-          'gameId': gameId,
-          'title': 'Best Character Tier List for Season 3',
-          'authorId': '2',
-          'authorName': 'ProGamer123',
-          'createdAt': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
-          'content': 'Here\'s my updated tier list for the current season based on competitive play. S Tier: Character X, Character Y. A Tier: Character Z, Character W. B Tier: Character V, Character U. Let me know your thoughts in the comments!',
-          'mediaUrls': [],
-          'tags': ['Tier List', 'Strategy', 'Competitive'],
-          'upvotes': 120,
-          'downvotes': 15,
-          'commentIds': ['1', '2', '3'],
-        },
-        {
-          'id': '2',
-          'gameId': gameId,
-          'title': 'Ultimate Beginner\'s Guide',
-          'authorId': '3',
-          'authorName': 'GameMaster',
-          'createdAt': DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
-          'content': 'If you\'re new to the game, this guide will help you get started with the basics. I cover controls, basic strategies, and tips to improve quickly.',
-          'mediaUrls': [],
-          'tags': ['Beginner', 'Guide', 'Tips'],
-          'upvotes': 89,
-          'downvotes': 3,
-          'commentIds': ['4', '5'],
-        },
-        {
-          'id': '3',
-          'gameId': gameId,
-          'title': 'Hidden Mechanics You Should Know',
-          'authorId': '4',
-          'authorName': 'SecretFinder',
-          'createdAt': DateTime.now().subtract(const Duration(hours: 12)).toIso8601String(),
-          'content': 'After extensive testing, I\'ve discovered some hidden mechanics that aren\'t explained anywhere in the game. These can give you a significant advantage if used correctly.',
-          'mediaUrls': [],
-          'tags': ['Advanced', 'Mechanics', 'Tips'],
-          'upvotes': 45,
-          'downvotes': 2,
-          'commentIds': [],
-        },
-        {
-          'id': '4',
-          'gameId': gameId,
-          'title': 'Meta Loadout for Current Season',
-          'authorId': '5',
-          'authorName': 'LoadoutMaster',
-          'createdAt': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
-          'content': 'This loadout has been dominating in high-level play. Primary: Weapon X with attachments Y and Z. Secondary: Weapon A with attachments B and C. Perks: Perk 1, Perk 2, Perk 3.',
-          'mediaUrls': [],
-          'tags': ['Loadout', 'Meta', 'Competitive'],
-          'upvotes': 76,
-          'downvotes': 8,
-          'commentIds': ['6'],
-        },
-      ];
+      throw e;
     }
   }
-  
-  Future<Map<String, dynamic>> createPost(Post post) async {
+
+  // Get all posts
+  Future<List<Map<String, dynamic>>> getPosts() async {
     try {
-      final headers = await _getHeaders();
-      final response = await http.post(
-        Uri.parse('$baseUrl/posts'),
-        headers: headers,
-        body: jsonEncode(post.toJson()),
-      );
-      
-      _handleError(response);
-      return jsonDecode(response.body);
+      await Future.delayed(Duration(milliseconds: 800));
+      throw Exception('Mock API - using sample data');
     } catch (e) {
-      // Simulate post creation for demo purposes
-      await Future.delayed(const Duration(seconds: 1));
+      throw e;
+    }
+  }
+
+  // Get featured posts
+  Future<List<Map<String, dynamic>>> getFeaturedPosts() async {
+    try {
+      await Future.delayed(Duration(milliseconds: 800));
+      throw Exception('Mock API - using sample data');
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // Get posts by game
+  Future<List<Map<String, dynamic>>> getPostsByGame(String gameId) async {
+    try {
+      await Future.delayed(Duration(milliseconds: 800));
+      throw Exception('Mock API - using sample data');
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // Get posts by type
+  Future<List<Map<String, dynamic>>> getPostsByType(String type) async {
+    try {
+      await Future.delayed(Duration(milliseconds: 800));
+      throw Exception('Mock API - using sample data');
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // Get post details
+  Future<Map<String, dynamic>> getPostDetails(String postId) async {
+    try {
+      await Future.delayed(Duration(milliseconds: 800));
+      throw Exception('Mock API - using sample data');
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // Get comments for a post
+  Future<List<Map<String, dynamic>>> getComments(String postId) async {
+    try {
+      await Future.delayed(Duration(milliseconds: 800));
+      throw Exception('Mock API - using sample data');
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // Login user
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    try {
+      await Future.delayed(Duration(milliseconds: 800));
+      
+      // For development, simulate a successful login
+      final currentTime = DateTime.now();
       return {
-        ...post.toJson(),
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+        'token': 'mock_jwt_token_${_uuid.v4()}',
+        'user': {
+          'id': 'user123',
+          'username': 'TestUser',
+          'email': email,
+          'avatarUrl': 'https://randomuser.me/api/portraits/men/1.jpg',
+          'bio': 'Gaming enthusiast and guide creator',
+          'favoriteGames': ['1', '3', '6'],
+          'upvotedPosts': ['1', '3', '9'],
+          'downvotedPosts': ['5'],
+          'upvotedComments': ['comment1', 'comment2'],
+          'downvotedComments': [],
+          'reputation': 120,
+          'createdAt': currentTime.subtract(Duration(days: 90)).toIso8601String(),
+          'lastLogin': currentTime.toIso8601String(),
+        }
       };
+    } catch (e) {
+      throw Exception('Login failed: ${e.toString()}');
     }
   }
-  
-  Future<void> upvotePost(String postId, String userId) async {
+
+  // Register user
+  Future<Map<String, dynamic>> register(String username, String email, String password) async {
     try {
-      final headers = await _getHeaders();
-      final response = await http.post(
-        Uri.parse('$baseUrl/posts/$postId/upvote'),
-        headers: headers,
-      );
+      await Future.delayed(Duration(milliseconds: 800));
       
-      _handleError(response);
-    } catch (e) {
-      // Simulate upvote for demo purposes
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-  }
-  
-  Future<void> downvotePost(String postId, String userId) async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.post(
-        Uri.parse('$baseUrl/posts/$postId/downvote'),
-        headers: headers,
-      );
-      
-      _handleError(response);
-    } catch (e) {
-      // Simulate downvote for demo purposes
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-  }
-  
-  // Comment APIs
-  Future<List<Map<String, dynamic>>> getCommentsForPost(String postId) async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/posts/$postId/comments'));
-      
-      _handleError(response);
-      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
-    } catch (e) {
-      // Simulate comment data for demo purposes
-      await Future.delayed(const Duration(seconds: 1));
-      return [
-        {
-          'id': '1',
-          'postId': postId,
-          'authorId': '5',
-          'authorName': 'Commenter1',
-          'content': 'This is really helpful, thanks for sharing!',
-          'createdAt': DateTime.now().subtract(const Duration(days: 1, hours: 3)).toIso8601String(),
-          'upvotes': 12,
-          'downvotes': 0,
-          'parentCommentId': null,
-          'childCommentIds': ['2'],
-        },
-        {
-          'id': '2',
-          'postId': postId,
-          'authorId': '6',
-          'authorName': 'Commenter2',
-          'content': 'I agree with this. It\'s definitely the best approach for now.',
-          'createdAt': DateTime.now().subtract(const Duration(days: 1, hours: 2)).toIso8601String(),
-          'upvotes': 5,
-          'downvotes': 1,
-          'parentCommentId': '1',
-          'childCommentIds': [],
-        },
-        {
-          'id': '3',
-          'postId': postId,
-          'authorId': '7',
-          'authorName': 'Commenter3',
-          'content': 'I have to disagree with your tier rankings. Character X should be A tier at best.',
-          'createdAt': DateTime.now().subtract(const Duration(hours: 18)).toIso8601String(),
-          'upvotes': 3,
-          'downvotes': 2,
-          'parentCommentId': null,
-          'childCommentIds': ['4', '5'],
-        },
-        {
-          'id': '4',
-          'postId': postId,
-          'authorId': '2',
-          'authorName': 'ProGamer123',
-          'content': 'Character X has the highest win rate in tournaments right now.',
-          'createdAt': DateTime.now().subtract(const Duration(hours: 17)).toIso8601String(),
-          'upvotes': 8,
-          'downvotes': 0,
-          'parentCommentId': '3',
-          'childCommentIds': [],
-        },
-        {
-          'id': '5',
-          'postId': postId,
-          'authorId': '8',
-          'authorName': 'GameExpert',
-          'content': 'The recent patch actually nerfed Character X, so these rankings might change soon.',
-          'createdAt': DateTime.now().subtract(const Duration(hours: 10)).toIso8601String(),
-          'upvotes': 6,
-          'downvotes': 1,
-          'parentCommentId': '3',
-          'childCommentIds': [],
-        },
-      ];
-    }
-  }
-  
-  Future<Map<String, dynamic>> createComment(Comment comment) async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.post(
-        Uri.parse('$baseUrl/comments'),
-        headers: headers,
-        body: jsonEncode(comment.toJson()),
-      );
-      
-      _handleError(response);
-      return jsonDecode(response.body);
-    } catch (e) {
-      // Simulate comment creation for demo purposes
-      await Future.delayed(const Duration(seconds: 1));
+      // For development, simulate a successful registration
+      final currentTime = DateTime.now();
       return {
-        ...comment.toJson(),
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+        'token': 'mock_jwt_token_${_uuid.v4()}',
+        'user': {
+          'id': 'user_${_uuid.v4().substring(0, 8)}',
+          'username': username,
+          'email': email,
+          'avatarUrl': null,
+          'bio': null,
+          'favoriteGames': [],
+          'upvotedPosts': [],
+          'downvotedPosts': [],
+          'upvotedComments': [],
+          'downvotedComments': [],
+          'reputation': 0,
+          'createdAt': currentTime.toIso8601String(),
+          'lastLogin': currentTime.toIso8601String(),
+        }
       };
-    }
-  }
-  
-  Future<void> upvoteComment(String commentId, String userId) async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.post(
-        Uri.parse('$baseUrl/comments/$commentId/upvote'),
-        headers: headers,
-      );
-      
-      _handleError(response);
     } catch (e) {
-      // Simulate upvote for demo purposes
-      await Future.delayed(const Duration(milliseconds: 500));
+      throw Exception('Registration failed: ${e.toString()}');
     }
   }
-  
-  Future<void> downvoteComment(String commentId, String userId) async {
+
+  // Create a post
+  Future<Map<String, dynamic>> createPost(Map<String, dynamic> postData) async {
     try {
-      final headers = await _getHeaders();
-      final response = await http.post(
-        Uri.parse('$baseUrl/comments/$commentId/downvote'),
-        headers: headers,
-      );
+      await Future.delayed(Duration(milliseconds: 800));
       
-      _handleError(response);
+      // For development, simulate a successful post creation
+      final currentTime = DateTime.now();
+      return {
+        'id': 'post_${_uuid.v4().substring(0, 8)}',
+        'title': postData['title'],
+        'content': postData['content'],
+        'authorId': postData['authorId'],
+        'authorName': postData['authorName'],
+        'authorAvatarUrl': postData['authorAvatarUrl'],
+        'gameId': postData['gameId'],
+        'gameName': postData['gameName'],
+        'type': postData['type'],
+        'tags': postData['tags'],
+        'upvotes': 0,
+        'downvotes': 0,
+        'commentCount': 0,
+        'createdAt': currentTime.toIso8601String(),
+        'updatedAt': currentTime.toIso8601String(),
+        'isFeatured': false,
+      };
     } catch (e) {
-      // Simulate downvote for demo purposes
-      await Future.delayed(const Duration(milliseconds: 500));
+      throw Exception('Failed to create post: ${e.toString()}');
     }
   }
-  
-  // User APIs
+
+  // Add a comment
+  Future<Map<String, dynamic>> addComment(Map<String, dynamic> commentData) async {
+    try {
+      await Future.delayed(Duration(milliseconds: 800));
+      
+      // For development, simulate a successful comment creation
+      final currentTime = DateTime.now();
+      return {
+        'id': 'comment_${_uuid.v4().substring(0, 8)}',
+        'postId': commentData['postId'],
+        'content': commentData['content'],
+        'authorId': commentData['authorId'],
+        'authorName': commentData['authorName'],
+        'authorAvatarUrl': commentData['authorAvatarUrl'],
+        'upvotes': 0,
+        'downvotes': 0,
+        'createdAt': currentTime.toIso8601String(),
+        'updatedAt': currentTime.toIso8601String(),
+      };
+    } catch (e) {
+      throw Exception('Failed to add comment: ${e.toString()}');
+    }
+  }
+
+  // Vote on a post
+  Future<void> votePost(String postId, bool isUpvote) async {
+    try {
+      await Future.delayed(Duration(milliseconds: 500));
+      
+      // In a real app, this would make an API call
+      // For now, just simulate success
+      return;
+    } catch (e) {
+      throw Exception('Failed to vote on post: ${e.toString()}');
+    }
+  }
+
+  // Update user data
   Future<void> updateUser(dynamic updatedUser) async {
     try {
-      final headers = await _getHeaders();
-      final response = await http.put(
-        Uri.parse('$baseUrl/users/${updatedUser.id}'),
-        headers: headers,
-        body: jsonEncode(updatedUser.toJson()),
-      );
+      await Future.delayed(Duration(milliseconds: 800));
       
-      _handleError(response);
+      // For now, just simulate success
+      return;
     } catch (e) {
-      // Simulate update for demo purposes
-      await Future.delayed(const Duration(seconds: 1));
+      throw Exception('Failed to update user: ${e.toString()}');
+    }
+  }
+
+  // Get current user from token
+  Future<Map<String, dynamic>> getCurrentUser() async {
+    try {
+      await Future.delayed(Duration(milliseconds: 500));
+      
+      // For development, simulate a response
+      final currentTime = DateTime.now();
+      return {
+        'id': 'user123',
+        'username': 'TestUser',
+        'email': 'test@example.com',
+        'avatarUrl': 'https://randomuser.me/api/portraits/men/1.jpg',
+        'bio': 'Gaming enthusiast and guide creator',
+        'favoriteGames': ['1', '3', '6'],
+        'upvotedPosts': ['1', '3', '9'],
+        'downvotedPosts': ['5'],
+        'upvotedComments': ['comment1', 'comment2'],
+        'downvotedComments': [],
+        'reputation': 120,
+        'createdAt': currentTime.subtract(Duration(days: 90)).toIso8601String(),
+        'lastLogin': currentTime.toIso8601String(),
+      };
+    } catch (e) {
+      throw Exception('Failed to get current user: ${e.toString()}');
     }
   }
 }

@@ -2,36 +2,67 @@ class User {
   final String id;
   final String username;
   final String email;
+  final String? bio;
   final String? avatarUrl;
-  final DateTime createdAt;
+  final List<String> favoriteGames;
   final List<String> upvotedPosts;
   final List<String> downvotedPosts;
   final List<String> upvotedComments;
   final List<String> downvotedComments;
+  final int reputation;
+  final DateTime createdAt;
+  final DateTime lastLogin;
 
   User({
     required this.id,
     required this.username,
     required this.email,
+    this.bio,
     this.avatarUrl,
+    List<String>? favoriteGames,
+    List<String>? upvotedPosts,
+    List<String>? downvotedPosts,
+    List<String>? upvotedComments,
+    List<String>? downvotedComments,
+    this.reputation = 0,
     required this.createdAt,
-    this.upvotedPosts = const [],
-    this.downvotedPosts = const [],
-    this.upvotedComments = const [],
-    this.downvotedComments = const [],
-  });
+    required this.lastLogin,
+  }) : 
+    favoriteGames = favoriteGames ?? [],
+    upvotedPosts = upvotedPosts ?? [],
+    downvotedPosts = downvotedPosts ?? [],
+    upvotedComments = upvotedComments ?? [],
+    downvotedComments = downvotedComments ?? [];
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as String,
-      username: json['username'] as String,
-      email: json['email'] as String,
-      avatarUrl: json['avatarUrl'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      upvotedPosts: List<String>.from(json['upvotedPosts'] ?? []),
-      downvotedPosts: List<String>.from(json['downvotedPosts'] ?? []),
-      upvotedComments: List<String>.from(json['upvotedComments'] ?? []),
-      downvotedComments: List<String>.from(json['downvotedComments'] ?? []),
+      id: json['id'],
+      username: json['username'],
+      email: json['email'],
+      bio: json['bio'],
+      avatarUrl: json['avatarUrl'],
+      favoriteGames: json['favoriteGames'] != null 
+          ? List<String>.from(json['favoriteGames']) 
+          : [],
+      upvotedPosts: json['upvotedPosts'] != null 
+          ? List<String>.from(json['upvotedPosts']) 
+          : [],
+      downvotedPosts: json['downvotedPosts'] != null 
+          ? List<String>.from(json['downvotedPosts']) 
+          : [],
+      upvotedComments: json['upvotedComments'] != null 
+          ? List<String>.from(json['upvotedComments']) 
+          : [],
+      downvotedComments: json['downvotedComments'] != null 
+          ? List<String>.from(json['downvotedComments']) 
+          : [],
+      reputation: json['reputation'] ?? 0,
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt']) 
+          : DateTime.now(),
+      lastLogin: json['lastLogin'] != null 
+          ? DateTime.parse(json['lastLogin']) 
+          : DateTime.now(),
     );
   }
 
@@ -40,12 +71,16 @@ class User {
       'id': id,
       'username': username,
       'email': email,
+      'bio': bio,
       'avatarUrl': avatarUrl,
-      'createdAt': createdAt.toIso8601String(),
+      'favoriteGames': favoriteGames,
       'upvotedPosts': upvotedPosts,
       'downvotedPosts': downvotedPosts,
       'upvotedComments': upvotedComments,
       'downvotedComments': downvotedComments,
+      'reputation': reputation,
+      'createdAt': createdAt.toIso8601String(),
+      'lastLogin': lastLogin.toIso8601String(),
     };
   }
 
@@ -53,23 +88,31 @@ class User {
     String? id,
     String? username,
     String? email,
+    String? bio,
     String? avatarUrl,
-    DateTime? createdAt,
+    List<String>? favoriteGames,
     List<String>? upvotedPosts,
     List<String>? downvotedPosts,
     List<String>? upvotedComments,
     List<String>? downvotedComments,
+    int? reputation,
+    DateTime? createdAt,
+    DateTime? lastLogin,
   }) {
     return User(
       id: id ?? this.id,
       username: username ?? this.username,
       email: email ?? this.email,
+      bio: bio ?? this.bio,
       avatarUrl: avatarUrl ?? this.avatarUrl,
-      createdAt: createdAt ?? this.createdAt,
+      favoriteGames: favoriteGames ?? this.favoriteGames,
       upvotedPosts: upvotedPosts ?? this.upvotedPosts,
       downvotedPosts: downvotedPosts ?? this.downvotedPosts,
       upvotedComments: upvotedComments ?? this.upvotedComments,
       downvotedComments: downvotedComments ?? this.downvotedComments,
+      reputation: reputation ?? this.reputation,
+      createdAt: createdAt ?? this.createdAt,
+      lastLogin: lastLogin ?? this.lastLogin,
     );
   }
 }
