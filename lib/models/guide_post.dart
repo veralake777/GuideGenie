@@ -4,11 +4,11 @@ class GuidePost {
   final String description;
   final String author;
   final String gameId;
-  final String type;
+  final String type; // Guide, Meta, Tier List, Strategy, etc.
   final int likes;
   final int comments;
   final DateTime createdAt;
-  final String content;
+  final String content; // Markdown content for the guide
   
   GuidePost({
     required this.id,
@@ -23,23 +23,23 @@ class GuidePost {
     required this.content,
   });
   
-  // Factory constructor to create a GuidePost from JSON
+  // Named constructor for creating from JSON
   factory GuidePost.fromJson(Map<String, dynamic> json) {
     return GuidePost(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      author: json['author'],
-      gameId: json['gameId'],
-      type: json['type'],
-      likes: json['likes'],
-      comments: json['comments'],
-      createdAt: DateTime.parse(json['createdAt']),
-      content: json['content'],
+      id: json['id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      author: json['author'] as String,
+      gameId: json['gameId'] as String,
+      type: json['type'] as String,
+      likes: json['likes'] as int,
+      comments: json['comments'] as int,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      content: json['content'] as String,
     );
   }
   
-  // Method to convert a GuidePost to JSON
+  // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,

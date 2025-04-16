@@ -15,19 +15,19 @@ class Game {
     required this.description,
   });
   
-  // Factory constructor to create a Game from JSON
+  // Named constructor for creating from JSON
   factory Game.fromJson(Map<String, dynamic> json) {
     return Game(
-      id: json['id'],
-      title: json['title'],
-      genre: json['genre'],
-      imageUrl: json['imageUrl'],
-      rating: json['rating'].toDouble(),
-      description: json['description'],
+      id: json['id'] as String,
+      title: json['title'] as String,
+      genre: json['genre'] as String,
+      imageUrl: json['imageUrl'] as String,
+      rating: (json['rating'] as num).toDouble(),
+      description: json['description'] as String,
     );
   }
   
-  // Method to convert a Game to JSON
+  // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,

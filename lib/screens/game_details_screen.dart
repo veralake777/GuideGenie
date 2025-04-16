@@ -1,92 +1,157 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:guide_genie/models/game.dart';
-import 'package:guide_genie/providers/auth_provider.dart';
-import 'package:guide_genie/providers/game_provider.dart';
-import 'package:guide_genie/providers/post_provider.dart';
-import 'package:guide_genie/utils/constants.dart';
-import 'package:guide_genie/widgets/loading_indicator.dart';
-import 'package:guide_genie/widgets/error_message.dart';
-import 'package:guide_genie/widgets/post_card.dart';
-import 'package:guide_genie/widgets/section_title.dart';
+import '../models/game.dart';
+import '../models/guide_post.dart';
+import '../widgets/popular_guide_card.dart';
 
 class GameDetailsScreen extends StatefulWidget {
   final String gameId;
-
+  
   const GameDetailsScreen({
     Key? key,
     required this.gameId,
   }) : super(key: key);
 
   @override
-  _GameDetailsScreenState createState() => _GameDetailsScreenState();
+  State<GameDetailsScreen> createState() => _GameDetailsScreenState();
 }
 
-class _GameDetailsScreenState extends State<GameDetailsScreen> {
+class _GameDetailsScreenState extends State<GameDetailsScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  Game? game;
+  List<GuidePost> guides = [];
+  bool isLoading = true;
+  
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _loadGameData();
+  }
+  
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+  
+  Future<void> _loadGameData() async {
+    // TODO: Replace with API call
+    await Future.delayed(const Duration(milliseconds: 500));
     
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Fetch game details and posts for this game
-      final gameProvider = Provider.of<GameProvider>(context, listen: false);
-      final postProvider = Provider.of<PostProvider>(context, listen: false);
-      
-      gameProvider.fetchGameDetails(widget.gameId);
-      postProvider.fetchPostsByGame(widget.gameId);
+    // Sample data - would be fetched from API
+    setState(() {
+      isLoading = false;
+      game = Game(
+        id: widget.gameId,
+        title: widget.gameId == '1' 
+            ? 'Fortnite' 
+            : widget.gameId == '2'
+                ? 'League of Legends'
+                : widget.gameId == '3'
+                    ? 'Valorant'
+                    : 'Call of Duty: Warzone',
+        genre: widget.gameId == '1' 
+            ? 'Battle Royale' 
+            : widget.gameId == '2'
+                ? 'MOBA'
+                : widget.gameId == '3'
+                    ? 'Tactical FPS'
+                    : 'Battle Royale',
+        imageUrl: widget.gameId == '1'
+            ? 'https://cdn2.unrealengine.com/en-22br-zerobuild-egs-launcher-2560x1440-2560x1440-a6f40c2ccea5.jpg'
+            : widget.gameId == '2'
+                ? 'https://cdn1.epicgames.com/offer/24b9b5e323bc40eea252a10cdd3b2f10/LOL_2560x1440-98749e0d718e82d27a084941939bc9d3'
+                : widget.gameId == '3'
+                    ? 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt81e8a3e8ac6c05e7/63b8a86598f3080c466a9ae4/Val_Ep6_Homepage_Act1_1920x1080.jpg'
+                    : 'https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/blog/hero/mwiii/MWIII-LAUNCH-TACTICS-TOUT.jpg',
+        rating: widget.gameId == '1' ? 4.8 : widget.gameId == '2' ? 4.7 : widget.gameId == '3' ? 4.9 : 4.6,
+        description: widget.gameId == '1'
+            ? 'A battle royale game where 100 players fight to be the last person standing.'
+            : widget.gameId == '2'
+                ? 'A team-based strategy game where two teams of five champions face off to destroy the other\'s base.'
+                : widget.gameId == '3'
+                    ? 'A 5v5 character-based tactical shooter set on the global stage.'
+                    : 'A free-to-play battle royale game from the Call of Duty franchise.',
+      );
+
+      // Sample guides
+      guides = [
+        GuidePost(
+          id: '101',
+          title: 'Ultimate Beginner\'s Guide',
+          description: 'Everything you need to know to get started with ${game!.title}. Learn the basics and get competitive quickly.',
+          author: 'GameGuru',
+          gameId: widget.gameId,
+          type: 'Guide',
+          likes: 435,
+          comments: 57,
+          createdAt: DateTime.now().subtract(const Duration(days: 7)),
+          content: '',
+        ),
+        GuidePost(
+          id: '102',
+          title: 'Current Meta Analysis',
+          description: 'A breakdown of the current meta in ${game!.title}. Find out what strategies and loadouts are dominating.',
+          author: 'MetaMaster',
+          gameId: widget.gameId,
+          type: 'Meta',
+          likes: 287,
+          comments: 42,
+          createdAt: DateTime.now().subtract(const Duration(days: 3)),
+          content: '',
+        ),
+        GuidePost(
+          id: '103',
+          title: 'Advanced Tactics',
+          description: 'Take your ${game!.title} skills to the next level with these pro-level tactics and strategies.',
+          author: 'ProPlayer',
+          gameId: widget.gameId,
+          type: 'Strategy',
+          likes: 198,
+          comments: 29,
+          createdAt: DateTime.now().subtract(const Duration(days: 5)),
+          content: '',
+        ),
+      ];
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildAppBar(),
-          _buildBody(),
-        ],
-      ),
-      floatingActionButton: _buildFloatingActionButton(),
-    );
-  }
-
-  Widget _buildAppBar() {
-    final gameProvider = Provider.of<GameProvider>(context);
-    final game = gameProvider.selectedGame;
-    
-    return SliverAppBar(
-      expandedHeight: 200.0,
-      pinned: true,
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          game?.name ?? 'Game Details',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: AppConstants.fontSizeL,
-          ),
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Game Details'),
         ),
-        background: Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-          ),
-          child: game != null
-              ? Stack(
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
+    return Scaffold(
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              expandedHeight: 200.0,
+              floating: false,
+              pinned: true,
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  game!.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                background: Stack(
                   fit: StackFit.expand,
                   children: [
-                    // Game Cover Image
+                    // Game image
                     Image.network(
-                      game.coverImageUrl,
+                      game!.imageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                            size: 50,
-                          ),
-                        );
-                      },
                     ),
                     // Gradient overlay for better text visibility
                     Container(
@@ -98,236 +163,232 @@ class _GameDetailsScreenState extends State<GameDetailsScreen> {
                             Colors.transparent,
                             Colors.black.withOpacity(0.7),
                           ],
-                          stops: const [0.6, 1.0],
                         ),
                       ),
                     ),
                   ],
-                )
-              : null,
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.share),
+                  onPressed: () {
+                    // TODO: Implement share functionality
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.bookmark_border),
+                  onPressed: () {
+                    // TODO: Implement bookmark functionality
+                  },
+                ),
+              ],
+            ),
+            SliverPersistentHeader(
+              delegate: _SliverAppBarDelegate(
+                TabBar(
+                  controller: _tabController,
+                  labelColor: Theme.of(context).primaryColor,
+                  unselectedLabelColor: Colors.grey,
+                  tabs: const [
+                    Tab(text: 'Overview'),
+                    Tab(text: 'Guides'),
+                    Tab(text: 'Community'),
+                  ],
+                  indicatorColor: Theme.of(context).primaryColor,
+                ),
+              ),
+              pinned: true,
+            ),
+          ];
+        },
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            // Overview Tab
+            _buildOverviewTab(),
+            
+            // Guides Tab
+            _buildGuidesTab(),
+            
+            // Community Tab
+            _buildCommunityTab(),
+          ],
         ),
       ),
-      actions: [
-        // Favorite button
-        Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
-            if (authProvider.isAuthenticated) {
-              return IconButton(
-                icon: Icon(
-                  authProvider.isGameFavorite(widget.gameId)
-                      ? Icons.favorite
-                      : Icons.favorite_border,
-                  color: authProvider.isGameFavorite(widget.gameId)
-                      ? Colors.red
-                      : Colors.white,
-                ),
-                onPressed: () {
-                  if (authProvider.isGameFavorite(widget.gameId)) {
-                    authProvider.removeGameFromFavorites(widget.gameId);
-                  } else {
-                    authProvider.addGameToFavorites(widget.gameId);
-                  }
-                },
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // TODO: Navigate to create guide screen
+        },
+        backgroundColor: Theme.of(context).primaryColor,
+        child: const Icon(Icons.add),
+      ),
     );
   }
-
-  Widget _buildBody() {
-    return Consumer<GameProvider>(
-      builder: (context, gameProvider, _) {
-        final game = gameProvider.selectedGame;
-        
-        if (gameProvider.isLoading) {
-          return const SliverFillRemaining(
-            child: LoadingIndicator(message: 'Loading game details...'),
-          );
-        }
-
-        if (gameProvider.errorMessage != null) {
-          return SliverFillRemaining(
-            child: ErrorMessage(
-              message: gameProvider.errorMessage!,
-              onRetry: () => gameProvider.fetchGameDetails(widget.gameId),
-            ),
-          );
-        }
-
-        if (game == null) {
-          return const SliverFillRemaining(
-            child: Center(
-              child: Text('Game not found'),
-            ),
-          );
-        }
-
-        return SliverToBoxAdapter(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildGameInfo(game),
-              _buildGamePosts(),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildGameInfo(Game game) {
-    return Padding(
-      padding: const EdgeInsets.all(AppConstants.paddingL),
+  
+  Widget _buildOverviewTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Game description
-          Text(
-            game.description,
-            style: TextStyle(
-              fontSize: AppConstants.fontSizeM,
-              height: 1.5,
-              color: Theme.of(context).colorScheme.onBackground.withOpacity(0.8),
-            ),
-          ),
-          const SizedBox(height: AppConstants.paddingL),
-          
-          // Game metadata
-          _buildMetadataItem('Developer', game.developer),
-          _buildMetadataItem('Publisher', game.publisher),
-          _buildMetadataItem('Release Date', game.releaseDate),
-          _buildMetadataItem('Platforms', game.platforms.join(', ')),
-          _buildMetadataItem('Genres', game.genres.join(', ')),
-          const SizedBox(height: AppConstants.paddingL),
-          
-          // Rating
+          // Game info
           Row(
             children: [
-              Icon(
-                Icons.star,
-                color: Colors.amber,
-                size: AppConstants.iconSizeM,
-              ),
-              const SizedBox(width: AppConstants.paddingS),
-              Text(
-                game.rating.toString(),
-                style: const TextStyle(
-                  fontSize: AppConstants.fontSizeL,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  game!.genre,
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              const SizedBox(width: AppConstants.paddingS),
-              Text(
-                '(${game.postCount} guides)',
-                style: TextStyle(
-                  fontSize: AppConstants.fontSizeM,
-                  color: Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
-                ),
+              const SizedBox(width: 12),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.star,
+                    color: Color(0xFFF5C842),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    game!.rating.toString(),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
             ],
           ),
-          const Divider(height: AppConstants.paddingXL),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetadataItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppConstants.paddingS),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: AppConstants.fontSizeS,
-              ),
+          
+          const SizedBox(height: 24),
+          
+          // Game description
+          Text(
+            'About',
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
+              fontWeight: FontWeight.bold,
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: AppConstants.fontSizeS,
-                color: Theme.of(context).colorScheme.onBackground,
-              ),
+          const SizedBox(height: 8),
+          Text(
+            game!.description,
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              color: Colors.grey[300],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGamePosts() {
-    return Consumer<PostProvider>(
-      builder: (context, postProvider, _) {
-        if (postProvider.isLoading) {
-          return const LoadingIndicator(message: 'Loading guides...');
-        }
-
-        if (postProvider.errorMessage != null) {
-          return ErrorMessage(
-            message: postProvider.errorMessage!,
-            onRetry: () => postProvider.fetchPostsByGame(widget.gameId),
-          );
-        }
-
-        if (postProvider.posts.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(AppConstants.paddingL),
-            child: Center(
-              child: Text(
-                'No guides available for this game yet.\nBe the first to create one!',
-                textAlign: TextAlign.center,
-              ),
+          
+          const SizedBox(height: 24),
+          
+          // Related guides section
+          Text(
+            'Popular Guides',
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
+              fontWeight: FontWeight.bold,
             ),
-          );
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SectionTitle(title: 'Guides'),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingM),
-              itemCount: postProvider.posts.length,
-              itemBuilder: (context, index) {
-                return PostCard(post: postProvider.posts[index]);
+          ),
+          const SizedBox(height: 16),
+          
+          // Show first two guides
+          if (guides.isNotEmpty)
+            PopularGuideCard(guide: guides[0]),
+          
+          if (guides.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: PopularGuideCard(guide: guides[1]),
+            ),
+          
+          const SizedBox(height: 16),
+          // View more button
+          Center(
+            child: TextButton(
+              onPressed: () {
+                _tabController.animateTo(1); // Switch to Guides tab
               },
+              child: Text(
+                'View All Guides',
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            const SizedBox(height: AppConstants.paddingXL),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildGuidesTab() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: guides.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: PopularGuideCard(guide: guides[index]),
         );
       },
     );
   }
+  
+  Widget _buildCommunityTab() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.people_outline,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Community Features Coming Soon',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Discuss strategies, share experiences, and connect with other players',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.grey[400],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-  Widget? _buildFloatingActionButton() {
-    final authProvider = Provider.of<AuthProvider>(context);
-    
-    if (authProvider.isAuthenticated) {
-      return FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(
-            context,
-            AppConstants.createPostRoute,
-            arguments: {'gameId': widget.gameId},
-          );
-        },
-        tooltip: 'Create Guide',
-        child: const Icon(Icons.add),
-      );
-    }
-    
-    return null;
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar _tabBar;
+  
+  _SliverAppBarDelegate(this._tabBar);
+  
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      child: _tabBar,
+    );
+  }
+  
+  @override
+  double get maxExtent => _tabBar.preferredSize.height;
+  
+  @override
+  double get minExtent => _tabBar.preferredSize.height;
+  
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return false;
   }
 }
