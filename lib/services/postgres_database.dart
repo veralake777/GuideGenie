@@ -22,23 +22,21 @@ class PostgresDatabase {
     print('PostgresDatabase: Attempting to connect to database...');
     
     try {
+      // Load .env file
+      await dotenv.load();
+      
       // Directly use the environment variable from Replit
       String? databaseUrl = const String.fromEnvironment('DATABASE_URL');
       
-      try {
-        // If not found in environment, try to load from dotenv
-        if (databaseUrl == null || databaseUrl.isEmpty) {
-          print('PostgresDatabase: DATABASE_URL from environment is empty, trying dotenv...');
-          await dotenv.load();
-          databaseUrl = dotenv.env['DATABASE_URL'];
-        }
-        
-        // For security, mask the password in logs
-        if (databaseUrl != null && databaseUrl.isNotEmpty) {
-          print('PostgresDatabase: Using database URL: ${databaseUrl.replaceAll(RegExp(r'postgres://[^:]+:[^@]+@'), 'postgres://user:password@')}');
-        }
-      } catch (e) {
-        print('PostgresDatabase: Error getting DATABASE_URL from dotenv: $e');
+      // Check if we can get DATABASE_URL from .env file if not found in environment
+      if (databaseUrl == null || databaseUrl.isEmpty) {
+        print('PostgresDatabase: DATABASE_URL from environment is empty, trying dotenv...');
+        databaseUrl = dotenv.env['DATABASE_URL'];
+      }
+      
+      // For security, mask the password in logs
+      if (databaseUrl != null && databaseUrl.isNotEmpty && databaseUrl != '${DATABASE_URL}') {
+        print('PostgresDatabase: Using database URL: ${databaseUrl.replaceAll(RegExp(r'postgres://[^:]+:[^@]+@'), 'postgres://user:password@')}');
       }
       
       // Try connecting using the direct environment variables first (Replit provides these)
@@ -47,6 +45,16 @@ class PostgresDatabase {
       String? pgHost = const String.fromEnvironment('PGHOST');
       String? pgDatabase = const String.fromEnvironment('PGDATABASE');
       String? pgPort = const String.fromEnvironment('PGPORT');
+      
+      // If the environment variables are not set, try to get them from dotenv
+      if (pgHost == null || pgHost.isEmpty) {
+        pgHost = dotenv.env['LOCAL_DATABASE_HOST'];
+        pgUser = dotenv.env['LOCAL_DATABASE_USER'];
+        pgPassword = dotenv.env['LOCAL_DATABASE_PASSWORD'];
+        pgDatabase = dotenv.env['LOCAL_DATABASE_NAME'];
+        pgPort = dotenv.env['LOCAL_DATABASE_PORT'];
+        print('PostgresDatabase: Using database values from dotenv file');
+      }
       
       if (pgHost != null && pgHost.isNotEmpty) {
         print('PostgresDatabase: Using direct PostgreSQL environment variables');
