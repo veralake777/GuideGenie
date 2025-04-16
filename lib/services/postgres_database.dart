@@ -12,7 +12,7 @@ class PostgresDatabase {
   
   PostgresDatabase._internal();
   
-  late PostgreSQLConnection _connection;
+  late Connection _connection;
   bool _isConnected = false;
   
   Future<void> connect() async {
@@ -51,10 +51,10 @@ class PostgresDatabase {
         print('PostgresDatabase: Using direct PostgreSQL environment variables');
         print('PostgresDatabase: Host: $pgHost, DB: $pgDatabase, User: $pgUser');
         
-        _connection = PostgreSQLConnection(
-          pgHost,
-          int.tryParse(pgPort ?? '') ?? 5432,
-          pgDatabase ?? 'postgres',
+        _connection = Connection(
+          host: pgHost,
+          port: int.tryParse(pgPort ?? '') ?? 5432,
+          database: pgDatabase ?? 'postgres',
           username: pgUser ?? 'postgres',
           password: pgPassword ?? '',
         );
@@ -72,10 +72,10 @@ class PostgresDatabase {
         
         print('PostgresDatabase: Parsed DATABASE_URL - Host: ${uri.host}, Port: ${uri.port}, DB: $database, User: $username');
         
-        _connection = PostgreSQLConnection(
-          uri.host,
-          uri.port,
-          database,
+        _connection = Connection(
+          host: uri.host,
+          port: uri.port,
+          database: database,
           username: username,
           password: password,
         );
@@ -91,10 +91,10 @@ class PostgresDatabase {
         
         print('PostgresDatabase: Using fallback connection details - Host: $host, Port: $port, DB: $database, User: $username');
         
-        _connection = PostgreSQLConnection(
-          host,
-          port, 
-          database,
+        _connection = Connection(
+          host: host,
+          port: port, 
+          database: database,
           username: username,
           password: password,
         );
