@@ -383,11 +383,10 @@ class PostgresDatabase {
   Future<User?> getUserByUsername(String username) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT * FROM users WHERE username = @username
-    ''', substitutionValues: {
-      'username': username,
-    });
+    final results = await _connection.execute(
+      Sql.named('SELECT * FROM users WHERE username = @username'),
+      parameters: {'username': username},
+    );
     
     if (results.isEmpty) {
       return null;
@@ -400,7 +399,7 @@ class PostgresDatabase {
   Future<List<User>> getAllUsers() async {
     await connect();
     
-    final results = await _connection.query('SELECT id FROM users');
+    final results = await _connection.execute('SELECT id FROM users');
     
     final users = <User>[];
     for (final row in results) {
@@ -417,11 +416,10 @@ class PostgresDatabase {
   Future<String?> getUserPasswordHash(String email) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT password_hash FROM users WHERE email = @email
-    ''', substitutionValues: {
-      'email': email,
-    });
+    final results = await _connection.execute(
+      Sql.named('SELECT password_hash FROM users WHERE email = @email'),
+      parameters: {'email': email},
+    );
     
     if (results.isEmpty) {
       return null;
@@ -433,125 +431,139 @@ class PostgresDatabase {
   Future<void> updateUser(User user) async {
     await connect();
     
-    await _connection.execute('''
-      UPDATE users
-      SET username = @username,
-          email = @email,
-          bio = @bio,
-          avatar_url = @avatarUrl,
-          reputation = @reputation,
-          last_login = @lastLogin
-      WHERE id = @id
-    ''', substitutionValues: {
-      'id': user.id,
-      'username': user.username,
-      'email': user.email,
-      'bio': user.bio,
-      'avatarUrl': user.avatarUrl,
-      'reputation': user.reputation,
-      'lastLogin': user.lastLogin.toIso8601String(),
-    });
+    await _connection.execute(
+      Sql.named('''
+        UPDATE users
+        SET username = @username,
+            email = @email,
+            bio = @bio,
+            avatar_url = @avatarUrl,
+            reputation = @reputation,
+            last_login = @lastLogin
+        WHERE id = @id
+      '''),
+      parameters: {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'bio': user.bio,
+        'avatarUrl': user.avatarUrl,
+        'reputation': user.reputation,
+        'lastLogin': user.lastLogin.toIso8601String(),
+      },
+    );
     
     // Update favorite games
-    await _connection.execute('''
-      DELETE FROM favorite_games WHERE user_id = @userId
-    ''', substitutionValues: {
-      'userId': user.id,
-    });
+    await _connection.execute(
+      Sql.named('DELETE FROM favorite_games WHERE user_id = @userId'),
+      parameters: {'userId': user.id},
+    );
     
     for (final gameId in user.favoriteGames) {
-      await _connection.execute('''
-        INSERT INTO favorite_games (user_id, game_id)
-        VALUES (@userId, @gameId)
-      ''', substitutionValues: {
-        'userId': user.id,
-        'gameId': gameId,
-      });
+      await _connection.execute(
+        Sql.named('INSERT INTO favorite_games (user_id, game_id) VALUES (@userId, @gameId)'),
+        parameters: {
+          'userId': user.id,
+          'gameId': gameId,
+        },
+      );
     }
   }
   
   Future<void> updateUserLastLogin(String userId) async {
     await connect();
     
-    await _connection.execute('''
-      UPDATE users
-      SET last_login = CURRENT_TIMESTAMP
-      WHERE id = @id
-    ''', substitutionValues: {
-      'id': userId,
-    });
+    await _connection.execute(
+      Sql.named('''
+        UPDATE users
+        SET last_login = CURRENT_TIMESTAMP
+        WHERE id = @id
+      '''),
+      parameters: {'id': userId},
+    );
   }
   
   Future<void> updateUserPassword(String userId, String passwordHash) async {
     await connect();
     
-    await _connection.execute('''
-      UPDATE users
-      SET password_hash = @passwordHash
-      WHERE id = @id
-    ''', substitutionValues: {
-      'id': userId,
-      'passwordHash': passwordHash,
-    });
+    await _connection.execute(
+      Sql.named('''
+        UPDATE users
+        SET password_hash = @passwordHash
+        WHERE id = @id
+      '''),
+      parameters: {
+        'id': userId,
+        'passwordHash': passwordHash,
+      },
+    );
   }
   
   // Game operations
   Future<void> createGame(Game game) async {
     await connect();
     
-    await _connection.execute('''
-      INSERT INTO games (
-        id, name, description, cover_image_url, developer, publisher,
-        release_date, rating, post_count, is_featured
-      )
-      VALUES (
-        @id, @name, @description, @coverImageUrl, @developer, @publisher,
-        @releaseDate, @rating, @postCount, @isFeatured
-      )
-    ''', substitutionValues: {
-      'id': game.id,
-      'name': game.name,
-      'description': game.description,
-      'coverImageUrl': game.coverImageUrl,
-      'developer': game.developer,
-      'publisher': game.publisher,
-      'releaseDate': game.releaseDate,
-      'rating': game.rating,
-      'postCount': game.postCount,
-      'isFeatured': game.isFeatured,
-    });
+    await _connection.execute(
+      Sql.named('''
+        INSERT INTO games (
+          id, name, description, cover_image_url, developer, publisher,
+          release_date, rating, post_count, is_featured
+        )
+        VALUES (
+          @id, @name, @description, @coverImageUrl, @developer, @publisher,
+          @releaseDate, @rating, @postCount, @isFeatured
+        )
+      '''),
+      parameters: {
+        'id': game.id,
+        'name': game.name,
+        'description': game.description,
+        'coverImageUrl': game.coverImageUrl,
+        'developer': game.developer,
+        'publisher': game.publisher,
+        'releaseDate': game.releaseDate,
+        'rating': game.rating,
+        'postCount': game.postCount,
+        'isFeatured': game.isFeatured,
+      },
+    );
     
     // Insert platforms
     for (final platform in game.platforms) {
-      await _connection.execute('''
-        INSERT INTO game_platforms (game_id, platform)
-        VALUES (@gameId, @platform)
-      ''', substitutionValues: {
-        'gameId': game.id,
-        'platform': platform,
-      });
+      await _connection.execute(
+        Sql.named('''
+          INSERT INTO game_platforms (game_id, platform)
+          VALUES (@gameId, @platform)
+        '''),
+        parameters: {
+          'gameId': game.id,
+          'platform': platform,
+        },
+      );
     }
     
     // Insert genres
     for (final genre in game.genres) {
-      await _connection.execute('''
-        INSERT INTO game_genres (game_id, genre)
-        VALUES (@gameId, @genre)
-      ''', substitutionValues: {
-        'gameId': game.id,
-        'genre': genre,
-      });
+      await _connection.execute(
+        Sql.named('''
+          INSERT INTO game_genres (game_id, genre)
+          VALUES (@gameId, @genre)
+        '''),
+        parameters: {
+          'gameId': game.id,
+          'genre': genre,
+        },
+      );
     }
   }
   
   Future<Game?> getGameById(String gameId) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT * FROM games WHERE id = @gameId
-    ''', substitutionValues: {
-      'gameId': gameId,
-    });
+    final results = await _connection.execute(
+      Sql.named('SELECT * FROM games WHERE id = @gameId'),
+      parameters: {'gameId': gameId},
+    );
     
     if (results.isEmpty) {
       return null;
@@ -560,20 +572,18 @@ class PostgresDatabase {
     final gameData = results.first;
     
     // Get platforms
-    final platformResults = await _connection.query('''
-      SELECT platform FROM game_platforms WHERE game_id = @gameId
-    ''', substitutionValues: {
-      'gameId': gameId,
-    });
+    final platformResults = await _connection.execute(
+      Sql.named('SELECT platform FROM game_platforms WHERE game_id = @gameId'),
+      parameters: {'gameId': gameId},
+    );
     
     final platforms = platformResults.map((row) => row[0] as String).toList();
     
     // Get genres
-    final genreResults = await _connection.query('''
-      SELECT genre FROM game_genres WHERE game_id = @gameId
-    ''', substitutionValues: {
-      'gameId': gameId,
-    });
+    final genreResults = await _connection.execute(
+      Sql.named('SELECT genre FROM game_genres WHERE game_id = @gameId'),
+      parameters: {'gameId': gameId},
+    );
     
     final genres = genreResults.map((row) => row[0] as String).toList();
     
