@@ -52,19 +52,20 @@ class PostgresDatabase {
         print('PostgresDatabase: Using direct PostgreSQL environment variables');
         print('PostgresDatabase: Host: $pgHost, DB: $pgDatabase, User: $pgUser');
         
-        _connection = Connection(
+        final endpoint = Endpoint(
           host: pgHost,
           port: int.tryParse(pgPort ?? '') ?? 5432,
           database: pgDatabase ?? 'postgres',
           username: pgUser ?? 'postgres',
           password: pgPassword ?? '',
         );
+        
+        _connection = await Connection.open(endpoint);
       } 
       // If direct variables not available, try using DATABASE_URL
       else if (databaseUrl != null && databaseUrl.isNotEmpty) {
         print('PostgresDatabase: Connecting using DATABASE_URL...');
         
-        // Parse the database URL manually
         final uri = Uri.parse(databaseUrl);
         final userInfo = uri.userInfo.split(':');
         final username = userInfo[0];
@@ -73,13 +74,15 @@ class PostgresDatabase {
         
         print('PostgresDatabase: Parsed DATABASE_URL - Host: ${uri.host}, Port: ${uri.port}, DB: $database, User: $username');
         
-        _connection = Connection(
+        final endpoint = Endpoint(
           host: uri.host,
           port: uri.port,
           database: database,
           username: username,
           password: password,
         );
+        
+        _connection = await Connection.open(endpoint);
       } 
       // Fallback to default development values as last resort
       else {
@@ -92,17 +95,17 @@ class PostgresDatabase {
         
         print('PostgresDatabase: Using fallback connection details - Host: $host, Port: $port, DB: $database, User: $username');
         
-        _connection = Connection(
+        final endpoint = Endpoint(
           host: host,
           port: port, 
           database: database,
           username: username,
           password: password,
         );
+        
+        _connection = await Connection.open(endpoint);
       }
       
-      // Open the connection
-      await _connection.open();
       _isConnected = true;
       print('PostgresDatabase: Connection established successfully');
       
@@ -1144,15 +1147,18 @@ class PostgresDatabase {
   Future<List<Game>> searchGames(String query) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT id FROM games
-      WHERE name ILIKE @query
-         OR description ILIKE @query
-         OR developer ILIKE @query
-         OR publisher ILIKE @query
-    ''', substitutionValues: {
-      'query': '%$query%',
-    });
+    final results = await _connection.execute(
+      Sql.named('''
+        SELECT id FROM games
+        WHERE name ILIKE @query
+           OR description ILIKE @query
+           OR developer ILIKE @query
+           OR publisher ILIKE @query
+      '''),
+      parameters: {
+        'query': '%$query%',
+      },
+    );
     
     final games = <Game>[];
     for (final row in results) {
@@ -1169,15 +1175,18 @@ class PostgresDatabase {
   Future<List<Post>> searchPosts(String query) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT id FROM posts
-      WHERE title ILIKE @query
-         OR content ILIKE @query
-         OR game_name ILIKE @query
-         OR author_name ILIKE @query
-    ''', substitutionValues: {
-      'query': '%$query%',
-    });
+    final results = await _connection.execute(
+      Sql.named('''
+        SELECT id FROM posts
+        WHERE title ILIKE @query
+           OR content ILIKE @query
+           OR game_name ILIKE @query
+           OR author_name ILIKE @query
+      '''),
+      parameters: {
+        'query': '%$query%',
+      },
+    );
     
     final posts = <Post>[];
     for (final row in results) {
@@ -1194,12 +1203,15 @@ class PostgresDatabase {
   Future<List<Post>> searchPostsByTag(String tag) async {
     await connect();
     
-    final results = await _connection.query('''
-      SELECT post_id FROM post_tags
-      WHERE tag ILIKE @tag
-    ''', substitutionValues: {
-      'tag': tag,
-    });
+    final results = await _connection.execute(
+      Sql.named('''
+        SELECT post_id FROM post_tags
+        WHERE tag ILIKE @tag
+      '''),
+      parameters: {
+        'tag': tag,
+      },
+    );
     
     final posts = <Post>[];
     for (final row in results) {
