@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:guide_genie/providers/auth_provider.dart';
 import 'package:guide_genie/providers/game_provider.dart';
 import 'package:guide_genie/providers/post_provider.dart';
@@ -13,8 +14,24 @@ import 'package:guide_genie/screens/profile_screen.dart';
 import 'package:guide_genie/screens/search_screen.dart';
 import 'package:guide_genie/screens/create_post_screen.dart';
 import 'package:guide_genie/utils/constants.dart';
+import 'package:guide_genie/services/postgres_database.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter is initialized
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables
+  await dotenv.load(fileName: '.env');
+  
+  // Initialize PostgreSQL database connection
+  final db = PostgresDatabase();
+  try {
+    await db.connect();
+    print('Connected to PostgreSQL database successfully');
+  } catch (e) {
+    print('Failed to connect to PostgreSQL database: $e');
+  }
+  
   runApp(const MyApp());
 }
 

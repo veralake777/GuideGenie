@@ -4,47 +4,18 @@ import 'package:guide_genie/models/game.dart';
 import 'package:guide_genie/models/post.dart';
 import 'package:guide_genie/models/user.dart';
 import 'package:guide_genie/utils/constants.dart';
+import 'package:guide_genie/services/postgres_database.dart';
 import 'package:uuid/uuid.dart';
+import 'package:crypto/crypto.dart';
 
-// This is a mock API service for development.
-// In a real app, this would make HTTP requests to a backend API.
+// This service handles API requests and database operations.
+// It uses PostgreSQL database for persistent storage and authentication.
 class ApiService {
   // Generate a UUID for IDs
   final Uuid _uuid = const Uuid();
   
-  // Simulated user database
-  final List<Map<String, dynamic>> _users = [
-    {
-      'id': 'user-1',
-      'username': 'GameMaster',
-      'email': 'gamemaster@example.com',
-      'bio': 'Professional gamer and guide creator. I love helping others improve their gameplay!',
-      'avatarUrl': 'https://randomuser.me/api/portraits/men/1.jpg',
-      'favoriteGames': ['game-1', 'game-3'],
-      'upvotedPosts': ['post-1', 'post-3'],
-      'downvotedPosts': [],
-      'upvotedComments': ['comment-1'],
-      'downvotedComments': [],
-      'reputation': 125,
-      'createdAt': '2023-01-15T10:30:00Z',
-      'lastLogin': '2023-05-01T14:22:00Z',
-    },
-    {
-      'id': 'user-2',
-      'username': 'StrategyQueen',
-      'email': 'strategyqueen@example.com',
-      'bio': 'Strategy game enthusiast. I create detailed guides for beginners and advanced players.',
-      'avatarUrl': 'https://randomuser.me/api/portraits/women/2.jpg',
-      'favoriteGames': ['game-2', 'game-4'],
-      'upvotedPosts': ['post-2'],
-      'downvotedPosts': ['post-4'],
-      'upvotedComments': [],
-      'downvotedComments': ['comment-2'],
-      'reputation': 84,
-      'createdAt': '2023-02-10T16:45:00Z',
-      'lastLogin': '2023-04-28T09:12:00Z',
-    },
-  ];
+  // Database instance
+  final PostgresDatabase _database = PostgresDatabase();
   
   // Simulated game database
   final List<Map<String, dynamic>> _games = [
@@ -330,18 +301,32 @@ class ApiService {
 
   // User methods
   Future<Map<String, dynamic>> login(String email, String password) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
+    // Get password hash from database
+    final storedPasswordHash = await _database.getUserPasswordHash(email);
+    if (storedPasswordHash == null) {
+      throw Exception('Invalid email or password');
+    }
     
-    // Find user by email (in a real app, we would check password too)
-    final user = _users.firstWhere(
-      (u) => u['email'] == email,
-      orElse: () => throw Exception('Invalid email or password'),
-    );
+    // Hash the provided password and compare
+    final passwordBytes = utf8.encode(password);
+    final passwordHash = sha256.convert(passwordBytes).toString();
+    
+    if (passwordHash != storedPasswordHash) {
+      throw Exception('Invalid email or password');
+    }
+    
+    // Get user data
+    final user = await _database.getUserByEmail(email);
+    if (user == null) {
+      throw Exception('User not found');
+    }
+    
+    // Update last login
+    await _database.updateUserLastLogin(user.id);
     
     return {
-      'token': 'mock_jwt_token_${_uuid.v4()}',
-      'user': user,
+      'token': 'jwt_token_${_uuid.v4()}', // In a real app, we would generate a proper JWT
+      'user': user.toJson(),
     };
   }
 
@@ -350,242 +335,211 @@ class ApiService {
     String email,
     String password,
   ) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 1200));
-    
     // Check if email already exists
-    if (_users.any((u) => u['email'] == email)) {
+    final existingUserByEmail = await _database.getUserByEmail(email);
+    if (existingUserByEmail != null) {
       throw Exception('Email already in use');
     }
     
     // Check if username already exists
-    if (_users.any((u) => u['username'] == username)) {
+    final existingUserByUsername = await _database.getUserByUsername(username);
+    if (existingUserByUsername != null) {
       throw Exception('Username already taken');
     }
     
-    // Create new user
-    final now = DateTime.now().toIso8601String();
-    final userId = 'user-${_users.length + 1}';
+    // Hash the password
+    final passwordBytes = utf8.encode(password);
+    final passwordHash = sha256.convert(passwordBytes).toString();
     
-    final newUser = {
-      'id': userId,
-      'username': username,
-      'email': email,
-      'bio': null,
-      'avatarUrl': null,
-      'favoriteGames': <String>[],
-      'upvotedPosts': <String>[],
-      'downvotedPosts': <String>[],
-      'upvotedComments': <String>[],
-      'downvotedComments': <String>[],
-      'reputation': 0,
-      'createdAt': now,
-      'lastLogin': now,
-    };
+    // Create new user
+    final now = DateTime.now();
+    final userId = _uuid.v4();
+    
+    final newUser = User(
+      id: userId,
+      username: username,
+      email: email,
+      bio: null,
+      avatarUrl: null,
+      favoriteGames: [],
+      upvotedPosts: [],
+      downvotedPosts: [],
+      upvotedComments: [],
+      downvotedComments: [],
+      reputation: 0,
+      createdAt: now,
+      lastLogin: now,
+    );
     
     // Add to database
-    _users.add(newUser);
+    await _database.createUser(newUser, passwordHash);
     
     return {
-      'token': 'mock_jwt_token_${_uuid.v4()}',
-      'user': newUser,
+      'token': 'jwt_token_${_uuid.v4()}',
+      'user': newUser.toJson(),
     };
   }
 
   Future<Map<String, dynamic>> getCurrentUser() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
-    
     // In a real app, we would use the token to get the current user
-    // For mock purposes, just return the first user
-    return _users.first;
+    // For development, get first user from database
+    final users = await _database.getAllUsers();
+    if (users.isEmpty) {
+      throw Exception('No users found');
+    }
+    
+    return users.first.toJson();
   }
 
   Future<void> updateUser(Map<String, dynamic> userData) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 1000));
+    // Convert JSON to User object
+    final userId = userData['id'] as String;
     
-    // Find user by ID
-    final index = _users.indexWhere((u) => u['id'] == userData['id']);
-    if (index == -1) {
+    // Get current user data
+    final currentUser = await _database.getUserById(userId);
+    if (currentUser == null) {
       throw Exception('User not found');
     }
     
-    // Update user data
-    _users[index] = {
-      ..._users[index],
-      ...userData,
-    };
+    // Update user with new data
+    final updatedUser = User(
+      id: currentUser.id,
+      username: userData['username'] as String? ?? currentUser.username,
+      email: userData['email'] as String? ?? currentUser.email,
+      bio: userData['bio'] as String? ?? currentUser.bio,
+      avatarUrl: userData['avatarUrl'] as String? ?? currentUser.avatarUrl,
+      favoriteGames: userData['favoriteGames'] != null
+          ? (userData['favoriteGames'] as List<dynamic>).cast<String>()
+          : currentUser.favoriteGames,
+      upvotedPosts: currentUser.upvotedPosts,
+      downvotedPosts: currentUser.downvotedPosts,
+      upvotedComments: currentUser.upvotedComments,
+      downvotedComments: currentUser.downvotedComments,
+      reputation: userData['reputation'] as int? ?? currentUser.reputation,
+      createdAt: currentUser.createdAt,
+      lastLogin: currentUser.lastLogin,
+    );
+    
+    // Save to database
+    await _database.updateUser(updatedUser);
   }
 
   // Game methods
   Future<List<Map<String, dynamic>>> getGames() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 700));
-    
-    return _games;
+    final games = await _database.getAllGames();
+    return games.map((game) => game.toJson()).toList();
   }
 
   Future<Map<String, dynamic>> getGameDetails(String gameId) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 600));
+    final game = await _database.getGameById(gameId);
+    if (game == null) {
+      throw Exception('Game not found');
+    }
     
-    // Find game by ID
-    final game = _games.firstWhere(
-      (g) => g['id'] == gameId,
-      orElse: () => throw Exception('Game not found'),
-    );
-    
-    return game;
+    return game.toJson();
   }
 
   // Post methods
   Future<List<Map<String, dynamic>>> getPosts() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
-    
-    return _posts;
+    final posts = await _database.getAllPosts();
+    return posts.map((post) => post.toJson()).toList();
   }
 
   Future<List<Map<String, dynamic>>> getFeaturedPosts() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 600));
-    
-    // Filter posts by featured
-    return _posts.where((p) => p['isFeatured'] == true).toList();
+    final posts = await _database.getFeaturedPosts();
+    return posts.map((post) => post.toJson()).toList();
   }
 
   Future<List<Map<String, dynamic>>> getLatestPosts() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 700));
-    
-    // Sort posts by date (newest first) and take first 10
-    final sortedPosts = List<Map<String, dynamic>>.from(_posts)
-      ..sort((a, b) => DateTime.parse(b['createdAt'])
-          .compareTo(DateTime.parse(a['createdAt'])));
-    
-    return sortedPosts.take(10).toList();
+    final posts = await _database.getLatestPosts(10);
+    return posts.map((post) => post.toJson()).toList();
   }
 
   Future<List<Map<String, dynamic>>> getPostsByGame(String gameId) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
-    
-    // Filter posts by game ID
-    return _posts.where((p) => p['gameId'] == gameId).toList();
+    final posts = await _database.getPostsByGame(gameId);
+    return posts.map((post) => post.toJson()).toList();
   }
 
   Future<Map<String, dynamic>> getPostDetails(String postId) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 600));
+    final post = await _database.getPostById(postId);
+    if (post == null) {
+      throw Exception('Post not found');
+    }
     
-    // Find post by ID
-    final post = _posts.firstWhere(
-      (p) => p['id'] == postId,
-      orElse: () => throw Exception('Post not found'),
-    );
-    
-    return post;
+    return post.toJson();
   }
 
   Future<void> createPost(Map<String, dynamic> postData) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 1200));
-    
     // Generate a new ID
-    final postId = 'post-${_posts.length + 1}';
+    final postId = _uuid.v4();
     
-    // Add the new post
-    _posts.add({
-      ...postData,
-      'id': postId,
-      'isFeatured': false,
-    });
+    // Create the post object
+    final post = Post(
+      id: postId,
+      title: postData['title'] as String,
+      content: postData['content'] as String,
+      gameId: postData['gameId'] as String,
+      gameName: postData['gameName'] as String,
+      type: postData['type'] as String,
+      tags: (postData['tags'] as List<dynamic>).cast<String>(),
+      authorId: postData['authorId'] as String,
+      authorName: postData['authorName'] as String,
+      authorAvatarUrl: postData['authorAvatarUrl'] as String,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      upvotes: 0,
+      downvotes: 0,
+      commentCount: 0,
+      isFeatured: false,
+    );
     
-    // Update game post count
-    final gameIndex = _games.indexWhere((g) => g['id'] == postData['gameId']);
-    if (gameIndex != -1) {
-      _games[gameIndex] = {
-        ..._games[gameIndex],
-        'postCount': _games[gameIndex]['postCount'] + 1,
-      };
-    }
+    // Save to database
+    await _database.createPost(post);
   }
 
   // Comment methods
   Future<List<Map<String, dynamic>>> getComments(String postId) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Filter comments by post ID
-    return _comments.where((c) => c['postId'] == postId).toList();
+    final comments = await _database.getCommentsByPost(postId);
+    return comments.map((comment) => comment.toJson()).toList();
   }
 
   Future<void> createComment(Map<String, dynamic> commentData) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
-    
     // Generate a new ID
-    final commentId = 'comment-${_comments.length + 1}';
+    final commentId = _uuid.v4();
     
-    // Add the new comment
-    _comments.add({
-      ...commentData,
-      'id': commentId,
-    });
+    // Create the comment object
+    final comment = Comment(
+      id: commentId,
+      postId: commentData['postId'] as String,
+      content: commentData['content'] as String,
+      authorId: commentData['authorId'] as String,
+      authorName: commentData['authorName'] as String,
+      authorAvatarUrl: commentData['authorAvatarUrl'] as String,
+      createdAt: DateTime.now(),
+      upvotes: 0,
+      downvotes: 0,
+    );
     
-    // Update post comment count
-    final postIndex = _posts.indexWhere((p) => p['id'] == commentData['postId']);
-    if (postIndex != -1) {
-      _posts[postIndex] = {
-        ..._posts[postIndex],
-        'commentCount': _posts[postIndex]['commentCount'] + 1,
-      };
-    }
+    // Save to database
+    await _database.createComment(comment);
   }
 
   // Voting methods
   Future<void> votePost(String postId, bool isUpvote) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    // Get the current user ID (in a real app, this would be from auth state)
+    // For now, we'll use a hardcoded user ID for demonstration
+    const userId = 'user-1'; // TODO: Get from auth state
     
-    // Find post by ID
-    final postIndex = _posts.indexWhere((p) => p['id'] == postId);
-    if (postIndex == -1) {
-      throw Exception('Post not found');
-    }
-    
-    // Update vote count
-    _posts[postIndex] = {
-      ..._posts[postIndex],
-      'upvotes': isUpvote
-          ? _posts[postIndex]['upvotes'] + 1
-          : _posts[postIndex]['upvotes'],
-      'downvotes': !isUpvote
-          ? _posts[postIndex]['downvotes'] + 1
-          : _posts[postIndex]['downvotes'],
-    };
+    // Save vote in database
+    await _database.saveVote(userId, postId, null, isUpvote);
   }
 
   Future<void> voteComment(String commentId, bool isUpvote) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    // Get the current user ID (in a real app, this would be from auth state)
+    // For now, we'll use a hardcoded user ID for demonstration
+    const userId = 'user-1'; // TODO: Get from auth state
     
-    // Find comment by ID
-    final commentIndex = _comments.indexWhere((c) => c['id'] == commentId);
-    if (commentIndex == -1) {
-      throw Exception('Comment not found');
-    }
-    
-    // Update vote count
-    _comments[commentIndex] = {
-      ..._comments[commentIndex],
-      'upvotes': isUpvote
-          ? _comments[commentIndex]['upvotes'] + 1
-          : _comments[commentIndex]['upvotes'],
-      'downvotes': !isUpvote
-          ? _comments[commentIndex]['downvotes'] + 1
-          : _comments[commentIndex]['downvotes'],
-    };
+    // Save vote in database
+    await _database.saveVote(userId, null, commentId, isUpvote);
   }
 }

@@ -18,8 +18,13 @@ dependencies:
   # HTTP and API
   http: ^0.13.5
   
-  # Storage
+  # Storage and Database
   shared_preferences: ^2.0.15
+  sqflite: ^2.2.6
+  path: ^1.8.2
+  path_provider: ^2.0.15
+  postgres: ^2.6.1
+  flutter_dotenv: ^5.1.0
   
   # UI utilities
   cupertino_icons: ^1.0.5
@@ -31,6 +36,7 @@ dependencies:
   # Utilities
   uuid: ^3.0.6
   intl: ^0.17.0
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:
@@ -41,6 +47,7 @@ flutter:
   uses-material-design: true
   
   assets:
+    - .env
     - assets/
     - assets/app_logo.svg
     - assets/game_logos/fortnite.svg

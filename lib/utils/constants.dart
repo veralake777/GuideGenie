@@ -12,6 +12,38 @@ class AppConstants {
   static const String themeKey = 'theme_mode';
   static const String favoriteGamesKey = 'favorite_games';
   
+  // Avatar sizes
+  static const double avatarSizeXS = 24.0;
+  static const double avatarSizeS = 32.0; 
+  static const double avatarSizeM = 48.0;
+  static const double avatarSizeL = 64.0;
+  static const double avatarSizeXL = 96.0;
+  
+  // Guide types
+  static const Map<String, String> guideTypeNames = {
+    'strategy': 'Strategy',
+    'tierList': 'Tier List',
+    'loadout': 'Loadout',
+    'metaAnalysis': 'Meta Analysis',
+    'beginnerTips': 'Beginner Tips',
+    'advancedTips': 'Advanced Tips',
+    'patch': 'Patch Notes',
+    'news': 'News',
+    'other': 'Other',
+  };
+  
+  static const Map<String, IconData> guideTypeIcons = {
+    'strategy': Icons.psychology,
+    'tierList': Icons.leaderboard,
+    'loadout': Icons.inventory_2,
+    'metaAnalysis': Icons.insights,
+    'beginnerTips': Icons.school,
+    'advancedTips': Icons.military_tech,
+    'patch': Icons.new_releases,
+    'news': Icons.newspaper,
+    'other': Icons.article,
+  };
+  
   // Routes
   static const String splashRoute = '/';
   static const String homeRoute = '/home';

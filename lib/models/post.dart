@@ -1,14 +1,5 @@
-enum GuideType {
-  strategy,
-  tierList,
-  loadout,
-  metaAnalysis,
-  beginnerTips,
-  advancedTips,
-  patch,
-  news,
-  other,
-}
+// Guide types are now implemented as strings in AppConstants.guideTypeNames
+// Rather than an enum, we just use the string directly (e.g., 'strategy', 'tierList', etc.)
 
 class Post {
   final String id;

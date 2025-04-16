@@ -26,7 +26,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final _tagsController = TextEditingController();
   
   String? _selectedGameId;
-  GuideType _selectedType = GuideType.strategy;
+  String _selectedType = 'strategy';
   bool _isSubmitting = false;
   
   @override
@@ -301,18 +301,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ),
         ),
         const SizedBox(height: AppConstants.paddingXS),
-        DropdownButtonFormField<GuideType>(
+        DropdownButtonFormField<String>(
           value: _selectedType,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
           ),
-          items: GuideType.values.map((type) {
-            final typeName = type.toString().split('.').last;
+          items: AppConstants.guideTypeNames.keys.map((String typeName) {
             final displayName = AppConstants.guideTypeNames[typeName] ?? typeName;
             final icon = AppConstants.guideTypeIcons[typeName] ?? Icons.article;
             
-            return DropdownMenuItem<GuideType>(
-              value: type,
+            return DropdownMenuItem<String>(
+              value: typeName,
               child: Row(
                 children: [
                   Icon(icon, size: AppConstants.iconSizeM),

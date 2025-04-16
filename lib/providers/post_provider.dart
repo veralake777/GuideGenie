@@ -123,7 +123,7 @@ class PostProvider with ChangeNotifier {
     String content,
     String gameId,
     String gameName,
-    GuideType type,
+    String type,
     List<String> tags,
     String authorId,
     String authorName,
@@ -266,7 +266,7 @@ class PostProvider with ChangeNotifier {
   }
 
   // Get posts by type
-  List<Post> getPostsByType(GuideType type) {
+  List<Post> getPostsByType(String type) {
     return _posts.where((post) => post.type == type).toList();
   }
 
