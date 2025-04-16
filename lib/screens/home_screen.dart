@@ -5,6 +5,7 @@ import '../models/guide_post.dart';
 import '../providers/game_provider.dart';
 import '../providers/post_provider.dart';
 import '../utils/constants.dart';
+import '../utils/ui_helper.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/featured_game_card.dart';
 import '../widgets/popular_guide_card.dart';
@@ -16,13 +17,35 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   bool isLoading = true;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
   
   @override
   void initState() {
     super.initState();
+    
+    // Setup animations
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController, 
+        curve: Curves.easeOut,
+      ),
+    );
+    
     _loadData();
+  }
+  
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
   
   Future<void> _loadData() async {
@@ -41,6 +64,9 @@ class _HomeScreenState extends State<HomeScreen> {
         postProvider.loadPosts(),
       ]);
       
+      // Start animation after data is loaded
+      _animationController.forward();
+      
       setState(() {
         isLoading = false;
       });
@@ -54,7 +80,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load data: ${e.toString()}'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -70,13 +100,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final popularGuides = postProvider.getPopularPosts();
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Guide Genie',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      extendBodyBehindAppBar: true,
+      appBar: UIHelper.gamingAppBar(
+        title: AppConstants.appName,
+        backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -88,9 +115,14 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.notifications_none),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Notifications feature coming soon!'),
-                  duration: Duration(seconds: 2),
+                SnackBar(
+                  content: const Text('Notifications feature coming soon!'),
+                  duration: const Duration(seconds: 2),
+                  backgroundColor: AppConstants.gamingDarkPurple,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusS),
+                  ),
                 ),
               );
             },
@@ -98,157 +130,198 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       drawer: const AppDrawer(),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadData,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Featured games section
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Featured Games',
-                            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                              fontWeight: FontWeight.bold,
+      body: Container(
+        decoration: UIHelper.gamingGradientBackground(),
+        child: Stack(
+          children: [
+            // Add subtle grid pattern background
+            UIHelper.gridPatternOverlay(opacity: 0.05),
+            
+            // Main content
+            isLoading
+              ? Center(child: UIHelper.gamingProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: _loadData,
+                  color: AppConstants.primaryNeon,
+                  backgroundColor: AppConstants.gamingDarkPurple,
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: kToolbarHeight + 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Featured games section
+                            UIHelper.sectionTitle(
+                              'Featured Games',
+                              context,
+                              onSeeAllPressed: () {
+                                // Navigate to all games screen
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('All Games feature coming soon!'),
+                                    duration: const Duration(seconds: 2),
+                                    backgroundColor: AppConstants.gamingDarkPurple,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusS),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // Navigate to all games screen
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('All Games feature coming soon!'),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'See All',
-                              style: TextStyle(
-                                color: Theme.of(context).primaryColor,
-                              ),
+                            
+                            // Featured games carousel
+                            if (featuredGames.isEmpty)
+                              UIHelper.emptyState(
+                                message: 'No featured games available yet. Check back soon for updates!',
+                                icon: Icons.games,
+                              )
+                            else
+                              _buildFeaturedGamesCarousel(featuredGames),
+                            
+                            // Popular guides section
+                            UIHelper.sectionTitle(
+                              'Popular Guides',
+                              context,
+                              onSeeAllPressed: () {
+                                // Navigate to all guides screen
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('All Guides feature coming soon!'),
+                                    duration: const Duration(seconds: 2),
+                                    backgroundColor: AppConstants.gamingDarkPurple,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusS),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    // Featured games carousel
-                    if (featuredGames.isEmpty)
-                      _buildEmptyState('No featured games available', Icons.games)
-                    else
-                      SizedBox(
-                        height: 170,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                          scrollDirection: Axis.horizontal,
-                          itemCount: featuredGames.length,
-                          itemBuilder: (context, index) {
-                            return FeaturedGameCard(game: featuredGames[index]);
-                          },
+                            
+                            // Popular guides list
+                            if (popularGuides.isEmpty)
+                              UIHelper.emptyState(
+                                message: 'Be the first to create a popular guide!',
+                                icon: Icons.menu_book,
+                                actionText: 'Create Guide',
+                                onActionPressed: () {
+                                  Navigator.pushNamed(context, AppConstants.createPostRoute);
+                                },
+                              )
+                            else
+                              _buildPopularGuidesList(popularGuides),
+                              
+                            // Add some space at the bottom
+                            const SizedBox(height: 80),
+                          ],
                         ),
                       ),
-                    
-                    // Popular guides section
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Popular Guides',
-                            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // Navigate to all guides screen
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('All Guides feature coming soon!'),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'See All',
-                              style: TextStyle(
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
-                    
-                    // Popular guides list
-                    if (popularGuides.isEmpty)
-                      _buildEmptyState('No popular guides available', Icons.menu_book)
-                    else
-                      ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: popularGuides.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: PopularGuideCard(guide: popularGuides[index]),
-                          );
-                        },
-                      ),
-                  ],
+                  ),
+                ),
+          ],
+        ),
+      ),
+      floatingActionButton: isLoading 
+          ? null
+          : _buildFloatingActionButton(),
+    );
+  }
+  
+  Widget _buildFeaturedGamesCarousel(List<Game> featuredGames) {
+    return Container(
+      height: 180,
+      margin: const EdgeInsets.only(bottom: AppConstants.paddingL),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingM),
+        scrollDirection: Axis.horizontal,
+        itemCount: featuredGames.length,
+        itemBuilder: (context, index) {
+          // Add staggered animation for each card
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: Offset(0.2 * (index + 1), 0),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(
+                  parent: _animationController,
+                  curve: Interval(
+                    0.2 + (index * 0.1),
+                    0.8 + (index * 0.05),
+                    curve: Curves.easeOutCubic,
+                  ),
                 ),
               ),
+              child: FeaturedGameCard(game: featuredGames[index]),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, AppConstants.createPostRoute);
+          );
         },
-        backgroundColor: Theme.of(context).primaryColor,
-        child: const Icon(Icons.add),
       ),
     );
   }
   
-  Widget _buildEmptyState(String message, IconData icon) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.grey[850],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey[800]!,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 48,
-            color: Colors.grey[600],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 16,
+  Widget _buildPopularGuidesList(List<GuidePost> guides) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingM),
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: guides.length,
+        itemBuilder: (context, index) {
+          // Add staggered animation for each card
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.2),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(
+                  parent: _animationController,
+                  curve: Interval(
+                    0.4 + (index * 0.05),
+                    0.9 + (index * 0.03),
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: AppConstants.paddingM),
+                child: PopularGuideCard(guide: guides[index]),
+              ),
             ),
-            textAlign: TextAlign.center,
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildFloatingActionButton() {
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: AppConstants.accentNeon.withOpacity(0.5),
+            blurRadius: 12,
+            spreadRadius: 2,
           ),
         ],
+        shape: BoxShape.circle,
+      ),
+      child: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, AppConstants.createPostRoute);
+        },
+        backgroundColor: AppConstants.gamingDarkPurple,
+        foregroundColor: AppConstants.accentNeon,
+        elevation: 8,
+        child: const Icon(Icons.add),
       ),
     );
   }
