@@ -20,25 +20,47 @@ class PostgresDatabase {
     
     print('PostgresDatabase: Attempting to connect to database...');
     
-    // Try to get database URL from environment or .env file
-    String? databaseUrl = const String.fromEnvironment('DATABASE_URL');
-    
-    // Import dart:io conditionally for platform check (web doesn't support dart:io)
     try {
-      // If not set, try to get from dotenv
-      if (databaseUrl.isEmpty) {
-        print('PostgresDatabase: DATABASE_URL from environment is empty, trying dotenv...');
-        databaseUrl = dotenv.env['DATABASE_URL'];
+      // Directly use the environment variable from Replit
+      String? databaseUrl = const String.fromEnvironment('DATABASE_URL');
+      
+      try {
+        // If not found in environment, try to load from dotenv
+        if (databaseUrl == null || databaseUrl.isEmpty) {
+          print('PostgresDatabase: DATABASE_URL from environment is empty, trying dotenv...');
+          await dotenv.load();
+          databaseUrl = dotenv.env['DATABASE_URL'];
+        }
+        
+        // For security, mask the password in logs
+        if (databaseUrl != null && databaseUrl.isNotEmpty) {
+          print('PostgresDatabase: Using database URL: ${databaseUrl.replaceAll(RegExp(r'postgres://[^:]+:[^@]+@'), 'postgres://user:password@')}');
+        }
+      } catch (e) {
+        print('PostgresDatabase: Error getting DATABASE_URL from dotenv: $e');
       }
       
-      print('PostgresDatabase: Using database URL: ${databaseUrl?.replaceAll(RegExp(r'postgres://[^:]+:[^@]+@'), 'postgres://user:password@')}');
+      // Try connecting using the direct environment variables first (Replit provides these)
+      String? pgUser = const String.fromEnvironment('PGUSER');
+      String? pgPassword = const String.fromEnvironment('PGPASSWORD');
+      String? pgHost = const String.fromEnvironment('PGHOST');
+      String? pgDatabase = const String.fromEnvironment('PGDATABASE');
+      String? pgPort = const String.fromEnvironment('PGPORT');
       
-    } catch (e) {
-      print('PostgresDatabase: Error getting DATABASE_URL: $e');
-    }
-    
-    try {
-      if (databaseUrl != null && databaseUrl.isNotEmpty) {
+      if (pgHost != null && pgHost.isNotEmpty) {
+        print('PostgresDatabase: Using direct PostgreSQL environment variables');
+        print('PostgresDatabase: Host: $pgHost, DB: $pgDatabase, User: $pgUser');
+        
+        _connection = PostgreSQLConnection(
+          pgHost,
+          int.tryParse(pgPort ?? '') ?? 5432,
+          pgDatabase ?? 'postgres',
+          username: pgUser ?? 'postgres',
+          password: pgPassword ?? '',
+        );
+      } 
+      // If direct variables not available, try using DATABASE_URL
+      else if (databaseUrl != null && databaseUrl.isNotEmpty) {
         print('PostgresDatabase: Connecting using DATABASE_URL...');
         
         // Parse the database URL manually
@@ -57,9 +79,10 @@ class PostgresDatabase {
           username: username,
           password: password,
         );
-      } else {
-        print('PostgresDatabase: DATABASE_URL not found, using fallback parameters...');
-        // Fallback to hardcoded values for development
+      } 
+      // Fallback to default development values as last resort
+      else {
+        print('PostgresDatabase: No database connection info found, using fallback parameters...');
         final host = 'localhost'; 
         final port = 5432;
         final database = 'postgres';

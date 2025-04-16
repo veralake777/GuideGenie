@@ -91,116 +91,243 @@ class AppConstants {
   static const Duration animationDurationMedium = Duration(milliseconds: 300);
   static const Duration animationDurationSlow = Duration(milliseconds: 500);
   
-  // Light theme
+  // Gaming theme colors
+  static const Color primaryNeon = Color(0xFF00FFFF); // Cyan neon
+  static const Color secondaryNeon = Color(0xFFFF00FF); // Magenta neon
+  static const Color accentNeon = Color(0xFF00FF00); // Green neon
+  static const Color warningNeon = Color(0xFFFFFF00); // Yellow neon
+  
+  static const Color gamingDarkBlue = Color(0xFF0A1128);
+  static const Color gamingDarkPurple = Color(0xFF240046);
+  static const Color gamingNeonPurple = Color(0xFF9000FF);
+  static const Color gamingNeonBlue = Color(0xFF2E00F8);
+  
+  // Gaming-inspired gradients
+  static const Gradient neonGradient = LinearGradient(
+    colors: [gamingNeonPurple, gamingNeonBlue],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  // Font family for gaming aesthetics
+  static const String gamingFontFamily = 'Audiowide';
+  
+  // Light theme (gaming-inspired)
   static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.deepPurple,
+      seedColor: gamingNeonPurple,
       brightness: Brightness.light,
+      primary: gamingNeonPurple,
+      secondary: gamingNeonBlue,
+      tertiary: primaryNeon,
     ),
     appBarTheme: AppBarTheme(
-      elevation: 0,
-      centerTitle: false,
-      backgroundColor: Colors.deepPurple,
+      elevation: 4,
+      centerTitle: true,
+      backgroundColor: gamingNeonPurple,
       foregroundColor: Colors.white,
       titleTextStyle: const TextStyle(
         fontSize: fontSizeL,
         fontWeight: FontWeight.bold,
+        fontFamily: gamingFontFamily,
+        letterSpacing: 1.2,
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        elevation: 2,
+        elevation: 8,
+        padding: const EdgeInsets.symmetric(horizontal: paddingL, vertical: paddingM),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadiusM),
+          borderRadius: BorderRadius.circular(borderRadiusL),
+          side: const BorderSide(color: primaryNeon, width: 2),
+        ),
+        textStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.5,
+          fontFamily: gamingFontFamily,
         ),
       ),
     ),
     cardTheme: CardTheme(
-      elevation: 2,
+      elevation: 8,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadiusM),
+        borderRadius: BorderRadius.circular(borderRadiusL),
+        side: BorderSide(color: gamingNeonPurple.withOpacity(0.3), width: 1),
       ),
+      color: Colors.white,
+      shadowColor: gamingNeonPurple.withOpacity(0.3),
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(borderRadiusM),
+        borderRadius: BorderRadius.circular(borderRadiusL),
+        borderSide: const BorderSide(color: gamingNeonPurple, width: 2),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusL),
+        borderSide: BorderSide(color: gamingNeonPurple.withOpacity(0.6), width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusL),
+        borderSide: const BorderSide(color: primaryNeon, width: 2.5),
       ),
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: paddingM,
+        horizontal: paddingL,
         vertical: paddingM,
       ),
+      filled: true,
+      fillColor: Colors.white,
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
+      backgroundColor: gamingDarkPurple,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadiusM),
+        borderRadius: BorderRadius.circular(borderRadiusL),
+        side: const BorderSide(color: primaryNeon, width: 1),
+      ),
+      contentTextStyle: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w500,
       ),
     ),
     navigationDrawerTheme: NavigationDrawerThemeData(
-      elevation: 2,
-      tileHeight: 56,
+      elevation: 16,
+      tileHeight: 60,
+      backgroundColor: Colors.white,
+      indicatorColor: gamingNeonPurple.withOpacity(0.2),
       indicatorShape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadiusM),
       ),
     ),
-    scaffoldBackgroundColor: Colors.grey[50],
+    scaffoldBackgroundColor: Colors.grey[100],
+    textTheme: const TextTheme(
+      displayLarge: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold),
+      displayMedium: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold),
+      displaySmall: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold),
+      headlineLarge: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold),
+      headlineMedium: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold),
+      titleLarge: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold),
+    ),
+    dividerTheme: const DividerThemeData(
+      color: gamingNeonPurple,
+      thickness: 1,
+      indent: 20,
+      endIndent: 20,
+    ),
   );
   
-  // Dark theme
+  // Dark theme (gaming-inspired)
   static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.deepPurple,
+      seedColor: gamingNeonPurple,
       brightness: Brightness.dark,
+      primary: primaryNeon,
+      secondary: secondaryNeon,
+      tertiary: accentNeon,
+      background: gamingDarkBlue,
+      surface: gamingDarkPurple,
     ),
     appBarTheme: AppBarTheme(
-      elevation: 0,
-      centerTitle: false,
-      backgroundColor: Colors.deepPurple[800],
+      elevation: 4,
+      centerTitle: true,
+      backgroundColor: gamingDarkPurple,
+      foregroundColor: primaryNeon,
       titleTextStyle: const TextStyle(
         fontSize: fontSizeL,
         fontWeight: FontWeight.bold,
+        color: primaryNeon,
+        fontFamily: gamingFontFamily,
+        letterSpacing: 1.2,
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        elevation: 2,
+        elevation: 8,
+        backgroundColor: gamingDarkPurple,
+        foregroundColor: primaryNeon,
+        padding: const EdgeInsets.symmetric(horizontal: paddingL, vertical: paddingM),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadiusM),
+          borderRadius: BorderRadius.circular(borderRadiusL),
+          side: const BorderSide(color: primaryNeon, width: 2),
+        ),
+        textStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.5,
+          fontFamily: gamingFontFamily,
         ),
       ),
     ),
     cardTheme: CardTheme(
-      elevation: 2,
+      elevation: 8,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadiusM),
+        borderRadius: BorderRadius.circular(borderRadiusL),
+        side: const BorderSide(color: primaryNeon, width: 1),
       ),
+      color: gamingDarkBlue,
+      shadowColor: primaryNeon.withOpacity(0.3),
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(borderRadiusM),
+        borderRadius: BorderRadius.circular(borderRadiusL),
+        borderSide: const BorderSide(color: primaryNeon, width: 2),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusL),
+        borderSide: BorderSide(color: primaryNeon.withOpacity(0.6), width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusL),
+        borderSide: const BorderSide(color: accentNeon, width: 2.5),
       ),
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: paddingM,
+        horizontal: paddingL,
         vertical: paddingM,
       ),
+      filled: true,
+      fillColor: gamingDarkBlue,
+      labelStyle: TextStyle(color: primaryNeon.withOpacity(0.8)),
+      hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
+      backgroundColor: gamingDarkPurple,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadiusM),
+        borderRadius: BorderRadius.circular(borderRadiusL),
+        side: const BorderSide(color: primaryNeon, width: 1),
+      ),
+      contentTextStyle: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w500,
       ),
     ),
     navigationDrawerTheme: NavigationDrawerThemeData(
-      elevation: 2,
-      tileHeight: 56,
+      elevation: 16,
+      tileHeight: 60,
+      backgroundColor: gamingDarkBlue,
+      indicatorColor: primaryNeon.withOpacity(0.2),
       indicatorShape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadiusM),
       ),
     ),
-    scaffoldBackgroundColor: const Color(0xFF121212),
+    scaffoldBackgroundColor: const Color(0xFF050A18), // Deep space blue
+    textTheme: TextTheme(
+      displayLarge: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      displayMedium: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      displaySmall: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      headlineLarge: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      headlineMedium: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      titleLarge: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      bodyLarge: TextStyle(color: Colors.white.withOpacity(0.9)),
+      bodyMedium: TextStyle(color: Colors.white.withOpacity(0.8)),
+    ),
+    dividerTheme: const DividerThemeData(
+      color: primaryNeon,
+      thickness: 1,
+      indent: 20,
+      endIndent: 20,
+    ),
   );
 }

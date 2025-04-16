@@ -24,25 +24,49 @@ void main() async {
   await dotenv.load(fileName: '.env');
   
   // Print environment variables for debugging
-  print('DATABASE_URL: ${dotenv.env['DATABASE_URL'] ?? 'Not set'}');
+  print('Environment debug information:');
+  print('DATABASE_URL from dotenv: ${dotenv.env['DATABASE_URL'] ?? 'Not set in dotenv'}');
   
-  // Initialize PostgreSQL database connection
+  // Check for direct environment variables
+  const pgUser = String.fromEnvironment('PGUSER');
+  const pgPassword = String.fromEnvironment('PGPASSWORD');
+  const pgHost = String.fromEnvironment('PGHOST');
+  const pgDatabase = String.fromEnvironment('PGDATABASE');
+  const pgPort = String.fromEnvironment('PGPORT');
+  const databaseUrl = String.fromEnvironment('DATABASE_URL');
+  
+  print('PGUSER: ${pgUser.isEmpty ? 'Not set' : pgUser}');
+  print('PGHOST: ${pgHost.isEmpty ? 'Not set' : pgHost}');
+  print('PGDATABASE: ${pgDatabase.isEmpty ? 'Not set' : pgDatabase}');
+  print('PGPORT: ${pgPort.isEmpty ? 'Not set' : pgPort}');
+  print('DATABASE_URL direct: ${databaseUrl.isEmpty ? 'Not set' : databaseUrl}');
+  
+  // Initialize database
+  bool useMockData = true; // Use mock data for now since we're focusing on UI
+  
   final db = PostgresDatabase();
   try {
-    print('Initializing database connection...');
-    await db.connect();
-    print('Connected to PostgreSQL database successfully');
-    
-    // Explicitly check database state
-    final games = await db.getAllGames();
-    print('Initial database check: Found ${games.length} games in the database');
-    
-    // Quick check of API service to get posts
-    final users = await db.getAllUsers();
-    print('Initial database check: Found ${users.length} users in the database');
+    if (!useMockData) {
+      print('Initializing PostgreSQL database connection...');
+      await db.connect();
+      print('Connected to PostgreSQL database successfully');
+      
+      // Explicitly check database state
+      final games = await db.getAllGames();
+      print('Initial database check: Found ${games.length} games in the database');
+      
+      // Quick check of API service to get posts
+      final users = await db.getAllUsers();
+      print('Initial database check: Found ${users.length} users in the database');
+    } else {
+      print('Using mock data for development and prototyping');
+      // We'll use the mock data providers instead
+    }
   } catch (e) {
     print('Failed to connect to PostgreSQL database: $e');
     print('Stack trace: ${StackTrace.current}');
+    print('Falling back to mock data for development');
+    // We'll use the mock data providers
   }
   
   runApp(const MyApp());
@@ -64,7 +88,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppConstants.lightTheme,
         darkTheme: AppConstants.darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.dark, // Default to dark theme for gaming aesthetics
         initialRoute: AppConstants.splashRoute,
         routes: {
           AppConstants.splashRoute: (context) => const SplashScreen(),
