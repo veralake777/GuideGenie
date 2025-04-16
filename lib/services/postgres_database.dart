@@ -12,7 +12,7 @@ class PostgresDatabase {
   
   PostgresDatabase._internal();
   
-  late Connection _connection;
+  late Pool _connection;
   bool _isConnected = false;
   
   Future<void> connect() async {
@@ -51,34 +51,13 @@ class PostgresDatabase {
         print('PostgresDatabase: Using direct PostgreSQL environment variables');
         print('PostgresDatabase: Host: $pgHost, DB: $pgDatabase, User: $pgUser');
         
-        _connection = Connection(
-          host: pgHost,
-          port: int.tryParse(pgPort ?? '') ?? 5432,
-          database: pgDatabase ?? 'postgres',
-          username: pgUser ?? 'postgres',
-          password: pgPassword ?? '',
-        );
+        final connectionString = 'postgres://$pgUser:$pgPassword@$pgHost:${pgPort ?? 5432}/${pgDatabase ?? 'postgres'}';
+        _connection = Pool(connectionString);
       } 
       // If direct variables not available, try using DATABASE_URL
       else if (databaseUrl != null && databaseUrl.isNotEmpty) {
         print('PostgresDatabase: Connecting using DATABASE_URL...');
-        
-        // Parse the database URL manually
-        final uri = Uri.parse(databaseUrl);
-        final userInfo = uri.userInfo.split(':');
-        final username = userInfo[0];
-        final password = userInfo.length > 1 ? userInfo[1] : '';
-        final database = uri.path.replaceFirst('/', '');
-        
-        print('PostgresDatabase: Parsed DATABASE_URL - Host: ${uri.host}, Port: ${uri.port}, DB: $database, User: $username');
-        
-        _connection = Connection(
-          host: uri.host,
-          port: uri.port,
-          database: database,
-          username: username,
-          password: password,
-        );
+        _connection = Pool(databaseUrl);
       } 
       // Fallback to default development values as last resort
       else {
@@ -91,19 +70,12 @@ class PostgresDatabase {
         
         print('PostgresDatabase: Using fallback connection details - Host: $host, Port: $port, DB: $database, User: $username');
         
-        _connection = Connection(
-          host: host,
-          port: port, 
-          database: database,
-          username: username,
-          password: password,
-        );
+        final connectionString = 'postgres://$username:$password@$host:$port/$database';
+        _connection = Pool(connectionString);
       }
       
-      print('PostgresDatabase: Opening connection...');
-      await _connection.open();
       _isConnected = true;
-      print('PostgresDatabase: Connection established successfully');
+      print('PostgresDatabase: Connection pool established successfully');
       
       print('PostgresDatabase: Creating tables if they don\'t exist...');
       await _createTables();
@@ -260,28 +232,34 @@ class PostgresDatabase {
   Future<void> createUser(User user, String passwordHash) async {
     await connect();
     
-    await _connection.execute('''
-      INSERT INTO users (id, username, email, password_hash, bio, avatar_url, reputation)
-      VALUES (@id, @username, @email, @passwordHash, @bio, @avatarUrl, @reputation)
-    ''', substitutionValues: {
-      'id': user.id,
-      'username': user.username,
-      'email': user.email,
-      'passwordHash': passwordHash,
-      'bio': user.bio,
-      'avatarUrl': user.avatarUrl,
-      'reputation': user.reputation,
-    });
+    await _connection.execute(
+      Sql.named('''
+        INSERT INTO users (id, username, email, password_hash, bio, avatar_url, reputation)
+        VALUES (@id, @username, @email, @passwordHash, @bio, @avatarUrl, @reputation)
+      '''),
+      parameters: {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'passwordHash': passwordHash,
+        'bio': user.bio,
+        'avatarUrl': user.avatarUrl,
+        'reputation': user.reputation,
+      },
+    );
     
     // Insert favorite games
     for (final gameId in user.favoriteGames) {
-      await _connection.execute('''
-        INSERT INTO favorite_games (user_id, game_id)
-        VALUES (@userId, @gameId)
-      ''', substitutionValues: {
-        'userId': user.id,
-        'gameId': gameId,
-      });
+      await _connection.execute(
+        Sql.named('''
+          INSERT INTO favorite_games (user_id, game_id)
+          VALUES (@userId, @gameId)
+        '''),
+        parameters: {
+          'userId': user.id,
+          'gameId': gameId,
+        },
+      );
     }
   }
   
@@ -308,42 +286,46 @@ class PostgresDatabase {
     final favoriteGames = favoriteResults.map((row) => row[0] as String).toList();
     
     // Get upvoted posts
-    final upvotedPostsResults = await _connection.query('''
-      SELECT post_id FROM user_votes
-      WHERE user_id = @userId AND post_id IS NOT NULL AND is_upvote = TRUE
-    ''', substitutionValues: {
-      'userId': userId,
-    });
+    final upvotedPostsResults = await _connection.execute(
+      Sql.named('''
+        SELECT post_id FROM user_votes
+        WHERE user_id = @userId AND post_id IS NOT NULL AND is_upvote = TRUE
+      '''),
+      parameters: {'userId': userId},
+    );
     
     final upvotedPosts = upvotedPostsResults.map((row) => row[0] as String).toList();
     
     // Get downvoted posts
-    final downvotedPostsResults = await _connection.query('''
-      SELECT post_id FROM user_votes
-      WHERE user_id = @userId AND post_id IS NOT NULL AND is_upvote = FALSE
-    ''', substitutionValues: {
-      'userId': userId,
-    });
+    final downvotedPostsResults = await _connection.execute(
+      Sql.named('''
+        SELECT post_id FROM user_votes
+        WHERE user_id = @userId AND post_id IS NOT NULL AND is_upvote = FALSE
+      '''),
+      parameters: {'userId': userId},
+    );
     
     final downvotedPosts = downvotedPostsResults.map((row) => row[0] as String).toList();
     
     // Get upvoted comments
-    final upvotedCommentsResults = await _connection.query('''
-      SELECT comment_id FROM user_votes
-      WHERE user_id = @userId AND comment_id IS NOT NULL AND is_upvote = TRUE
-    ''', substitutionValues: {
-      'userId': userId,
-    });
+    final upvotedCommentsResults = await _connection.execute(
+      Sql.named('''
+        SELECT comment_id FROM user_votes
+        WHERE user_id = @userId AND comment_id IS NOT NULL AND is_upvote = TRUE
+      '''),
+      parameters: {'userId': userId},
+    );
     
     final upvotedComments = upvotedCommentsResults.map((row) => row[0] as String).toList();
     
     // Get downvoted comments
-    final downvotedCommentsResults = await _connection.query('''
-      SELECT comment_id FROM user_votes
-      WHERE user_id = @userId AND comment_id IS NOT NULL AND is_upvote = FALSE
-    ''', substitutionValues: {
-      'userId': userId,
-    });
+    final downvotedCommentsResults = await _connection.execute(
+      Sql.named('''
+        SELECT comment_id FROM user_votes
+        WHERE user_id = @userId AND comment_id IS NOT NULL AND is_upvote = FALSE
+      '''),
+      parameters: {'userId': userId},
+    );
     
     final downvotedComments = downvotedCommentsResults.map((row) => row[0] as String).toList();
     
