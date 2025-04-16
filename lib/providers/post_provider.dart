@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:guide_genie/models/guide_post.dart';
 import 'package:guide_genie/models/post.dart';
 import 'package:guide_genie/models/comment.dart';
 import 'package:guide_genie/services/api_service.dart';
@@ -22,6 +23,55 @@ class PostProvider with ChangeNotifier {
   List<Comment> get comments => _comments;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  
+  // Load all posts - combined loading
+  Future<void> loadPosts() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    
+    try {
+      // Load all post types concurrently
+      await Future.wait([
+        fetchPosts(),
+        fetchFeaturedPosts(),
+        fetchLatestPosts(),
+      ]);
+      
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      throw e; // Re-throw for the caller to handle
+    }
+  }
+  
+  // Get popular posts (most upvoted)
+  List<GuidePost> getPopularPosts() {
+    // If direct GuidePost data exists, convert and use
+    if (_posts.isNotEmpty) {
+      final sortedPosts = List<Post>.from(_posts);
+      sortedPosts.sort((a, b) => b.upvotes.compareTo(a.upvotes));
+      
+      return sortedPosts.take(5).map((post) => GuidePost(
+        id: post.id,
+        title: post.title, 
+        description: post.content.length > 100 ? '${post.content.substring(0, 100)}...' : post.content,
+        author: post.authorName,
+        gameId: post.gameId,
+        type: post.type,
+        likes: post.upvotes,
+        comments: post.commentCount,
+        createdAt: post.createdAt,
+        content: post.content,
+      )).toList();
+    }
+    
+    // Otherwise return empty list
+    return [];
+  }
 
   // Fetch all posts
   Future<void> fetchPosts() async {

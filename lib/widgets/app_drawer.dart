@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:guide_genie/providers/auth_provider.dart';
+import 'package:guide_genie/utils/constants.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final isAuthenticated = authProvider.isAuthenticated;
+    final currentUser = authProvider.currentUser;
+
     return Drawer(
       child: Container(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -35,6 +42,42 @@ class AppDrawer extends StatelessWidget {
                       fontSize: 14,
                     ),
                   ),
+                  if (isAuthenticated && currentUser != null) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 14,
+                          backgroundColor: Colors.white,
+                          backgroundImage: currentUser.avatarUrl != null && currentUser.avatarUrl!.isNotEmpty
+                              ? NetworkImage(currentUser.avatarUrl!)
+                              : null,
+                          child: currentUser.avatarUrl == null || currentUser.avatarUrl!.isEmpty
+                              ? Text(
+                                  currentUser.username.isNotEmpty
+                                      ? currentUser.username[0].toUpperCase()
+                                      : '?',
+                                  style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            currentUser.username,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -47,7 +90,7 @@ class AppDrawer extends StatelessWidget {
               isSelected: true,
               onTap: () {
                 Navigator.pop(context); // Close drawer
-                // Already on home screen, no navigation needed
+                Navigator.pushReplacementNamed(context, AppConstants.homeRoute);
               },
             ),
             
@@ -57,13 +100,7 @@ class AppDrawer extends StatelessWidget {
               title: 'Explore',
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Navigate to explore screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Explore feature coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+                Navigator.pushNamed(context, AppConstants.searchRoute);
               },
             ),
             
@@ -73,7 +110,7 @@ class AppDrawer extends StatelessWidget {
               title: 'All Games',
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Navigate to games list screen
+                // Navigate to games list screen
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('All Games feature coming soon!'),
@@ -83,21 +120,23 @@ class AppDrawer extends StatelessWidget {
               },
             ),
             
-            _buildDrawerItem(
-              context,
-              icon: Icons.bookmark,
-              title: 'Bookmarks',
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to bookmarks screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Bookmarks feature coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
+            if (isAuthenticated) ...[
+              _buildDrawerItem(
+                context,
+                icon: Icons.bookmark,
+                title: 'Bookmarks',
+                onTap: () {
+                  Navigator.pop(context);
+                  // Navigate to bookmarks screen
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Bookmarks feature coming soon!'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+            ],
             
             const Divider(color: Colors.grey),
             
@@ -107,13 +146,7 @@ class AppDrawer extends StatelessWidget {
               title: 'Settings',
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Navigate to settings screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Settings feature coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+                Navigator.pushNamed(context, AppConstants.settingsRoute);
               },
             ),
             
@@ -123,13 +156,12 @@ class AppDrawer extends StatelessWidget {
               title: 'About',
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Show about dialog
                 showAboutDialog(
                   context: context,
-                  applicationName: 'Guide Genie',
-                  applicationVersion: '1.0.0',
-                  applicationIcon: const FlutterLogo(),
-                  applicationLegalese: '© 2023 Guide Genie',
+                  applicationName: AppConstants.appName,
+                  applicationVersion: AppConstants.appVersion,
+                  applicationIcon: const Icon(Icons.videogame_asset, size: 48, color: Color(0xFF5865F2)),
+                  applicationLegalese: '© 2024 Guide Genie',
                   children: [
                     const SizedBox(height: 12),
                     const Text(
@@ -140,52 +172,64 @@ class AppDrawer extends StatelessWidget {
               },
             ),
             
-            // Not logged in state
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: OutlinedButton(
-                onPressed: () {
+            if (isAuthenticated) ...[
+              // Logged in state - Account and Logout options
+              _buildDrawerItem(
+                context,
+                icon: Icons.account_circle,
+                title: 'My Account',
+                onTap: () {
                   Navigator.pop(context);
-                  // TODO: Navigate to login screen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Login feature coming soon!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                  Navigator.pushNamed(context, AppConstants.accountRoute);
                 },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).primaryColor,
-                  side: BorderSide(color: Theme.of(context).primaryColor),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text('Log In'),
               ),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ElevatedButton(
-                onPressed: () {
+              
+              _buildDrawerItem(
+                context,
+                icon: Icons.logout,
+                title: 'Logout',
+                onTap: () async {
                   Navigator.pop(context);
-                  // TODO: Navigate to signup screen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Sign Up feature coming soon!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                  await authProvider.logout();
+                  Navigator.pushReplacementNamed(context, AppConstants.homeRoute);
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text('Sign Up'),
               ),
-            ),
+            ] else ...[
+              // Not logged in state - Login and Register buttons
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, AppConstants.loginRoute);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).primaryColor,
+                    side: BorderSide(color: Theme.of(context).primaryColor),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('Log In'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, AppConstants.registerRoute);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('Sign Up'),
+                ),
+              ),
+            ],
           ],
         ),
       ),

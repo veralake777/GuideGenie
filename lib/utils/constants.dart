@@ -55,6 +55,7 @@ class AppConstants {
   static const String searchRoute = '/search';
   static const String createPostRoute = '/create_post';
   static const String settingsRoute = '/settings';
+  static const String accountRoute = '/account';
   
   // Padding
   static const double paddingXXS = 2.0;
