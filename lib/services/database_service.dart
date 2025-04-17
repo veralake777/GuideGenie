@@ -165,9 +165,10 @@ class DatabaseService {
       return results.map((row) {
         return Game(
           id: row[0] as String,
-          title: row[1] as String,
+          name: row[1] as String,  // Changed from title to name
           genre: row[2] as String,
           imageUrl: row[3] as String,
+          iconUrl: row[3] as String,
           rating: (row[4] as num).toDouble(),
           description: row[5] as String,
         );
@@ -197,9 +198,10 @@ class DatabaseService {
       final row = results.first;
       return Game(
         id: row[0] as String,
-        title: row[1] as String,
+        name: row[1] as String,  // Changed from title to name
         genre: row[2] as String,
         imageUrl: row[3] as String,
+        iconUrl: row[3] as String,
         rating: (row[4] as num).toDouble(),
         description: row[5] as String,
       );
@@ -220,9 +222,10 @@ class DatabaseService {
       return results.map((row) {
         return Game(
           id: row[0] as String,
-          title: row[1] as String,
+          name: row[1] as String,  // Changed from title to name
           genre: row[2] as String,
           imageUrl: row[3] as String,
+          iconUrl: row[3] as String,
           rating: (row[4] as num).toDouble(),
           description: row[5] as String,
           isFeatured: true,
@@ -247,9 +250,10 @@ class DatabaseService {
       return results.map((row) {
         return Game(
           id: row[0] as String,
-          title: row[1] as String,
+          name: row[1] as String,  // Changed from title to name
           genre: row[2] as String,
           imageUrl: row[3] as String,
+          iconUrl: row[3] as String,
           rating: (row[4] as num).toDouble(),
           description: row[5] as String,
         );
@@ -472,23 +476,23 @@ class DatabaseService {
         commentCount: 47,
         createdAt: now.subtract(const Duration(days: 10)),
         updatedAt: now.subtract(const Duration(days: 8)),
-        tags: ['champions', 'selection', 'team-comp'],
+        tags: ['champion-select', 'team-comp', 'meta'],
       ),
       GuidePost(
         id: '105',
         title: 'Ultimate Fortnite Season X Weapon Tier List',
-        content: 'Check out the latest tier rankings for all weapons in Season X! This guide breaks down each weapon by its damage, rarity, and situational effectiveness.',
+        content: 'A comprehensive tier list of all weapons in the current season, including stats and best uses.',
         authorId: 'user1',
-        authorName: 'JohnDoe',
-        authorAvatarUrl: 'https://i.pravatar.cc/150?img=11',
+        authorName: 'GameGuru',
+        authorAvatarUrl: '',
         gameId: '1',
         gameName: 'Fortnite',
         type: 'Tier List',
-        likes: 245,
-        commentCount: 38,
+        likes: 521,
+        commentCount: 76,
         createdAt: now.subtract(const Duration(days: 2)),
         updatedAt: now.subtract(const Duration(days: 1)),
-        tags: ['weapon', 'tier-list', 'meta', 'season-x'],
+        tags: ['weapons', 'tier-list', 'meta'],
       ),
     ];
   }

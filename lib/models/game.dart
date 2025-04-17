@@ -33,16 +33,19 @@ class Game {
       id: map['id'] ?? '',
       name: map['name'] ?? map['title'] ?? '',
       description: map['description'] ?? '',
-      iconUrl: map['iconUrl'] ?? map['icon_url'] ?? '',
-      imageUrl: map['imageUrl'] ?? '',
-      coverImageUrl: map['coverImageUrl'] ?? '',
+      iconUrl: map['iconUrl'] ?? map['icon_url'] ?? map['imageUrl'] ?? '',
+      imageUrl: map['imageUrl'] ?? map['iconUrl'] ?? '',
+      coverImageUrl: map['coverImageUrl'] ?? map['imageUrl'] ?? map['iconUrl'] ?? '',
       status: map['status'] ?? 'active',
       genre: map['genre'] ?? '',
       rating: map['rating']?.toDouble() ?? 0.0,
-      isFeatured: map['isFeatured'] ?? map['status'] == 'active',
-      postCount: map['postCount'] ?? 0,
+      isFeatured: map['isFeatured'] ?? map['is_featured'] ?? map['status'] == 'active',
+      postCount: map['postCount'] ?? map['post_count'] ?? 0,
     );
   }
+  
+  // Alias for fromMap to support JSON parsing
+  factory Game.fromJson(Map<String, dynamic> json) => Game.fromMap(json);
 
   Map<String, dynamic> toMap() {
     return {
@@ -59,6 +62,9 @@ class Game {
       'postCount': postCount,
     };
   }
+  
+  // Alias for toMap to support JSON serialization
+  Map<String, dynamic> toJson() => toMap();
 
   Game copyWith({
     String? id,
