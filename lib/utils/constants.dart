@@ -61,6 +61,7 @@ class AppConstants {
   static const String allGamesRoute = '/all_games';
   static const String allGuidesRoute = '/all_guides';
   static const String guideDetailsRoute = '/guide_details';
+  static const String apiTestRoute = '/api_test';
   
   // Padding
   static const double paddingXXS = 2.0;
