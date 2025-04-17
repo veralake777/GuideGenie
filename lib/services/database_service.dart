@@ -2,11 +2,8 @@ import 'dart:async';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:guide_genie/models/game.dart';
 import 'package:guide_genie/models/guide_post.dart';
-import 'package:postgres_pool/postgres_pool.dart';
+import 'package:postgres/postgres.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-
-// Type to handle different database connection types
-typedef DatabaseConnection = dynamic;
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
@@ -14,7 +11,7 @@ class DatabaseService {
   
   DatabaseService._internal();
   
-  DatabaseConnection? _connection;
+  PostgreSQLConnection? _connection;
   bool _isConnected = false;
   bool _useMockData = false;
   
@@ -43,56 +40,28 @@ class DatabaseService {
         return;
       }
       
-      // Get connection parameters
-      final databaseUrl = dotenv.env['DATABASE_URL'];
+      // Get individual connection parameters
+      final host = dotenv.env['PGHOST'] ?? 'localhost';
+      final port = int.tryParse(dotenv.env['PGPORT'] ?? '5432') ?? 5432;
+      final database = dotenv.env['PGDATABASE'] ?? 'guidegenie';
+      final username = dotenv.env['PGUSER'] ?? 'postgres';
+      final password = dotenv.env['PGPASSWORD'] ?? 'postgres';
       
-      if (databaseUrl != null && databaseUrl.isNotEmpty) {
-        // Create a PostgreSQL pool using the full connection string
-        _connection = PgPool(
-          PgEndpoint(
-            host: dotenv.env['PGHOST'] ?? '',
-            port: int.tryParse(dotenv.env['PGPORT'] ?? '5432') ?? 5432,
-            database: dotenv.env['PGDATABASE'] ?? '',
-            username: dotenv.env['PGUSER'] ?? '',
-            password: dotenv.env['PGPASSWORD'] ?? '',
-          ),
-          settings: PgPoolSettings(
-            maxConnectionAge: const Duration(hours: 1),
-            sslMode: SslMode.require,
-          ),
-        );
-        
-        print('DatabaseService: Connected using DATABASE_URL');
-      } else {
-        // Get individual connection parameters
-        final host = dotenv.env['PGHOST'] ?? 'localhost';
-        final port = int.tryParse(dotenv.env['PGPORT'] ?? '5432') ?? 5432;
-        final database = dotenv.env['PGDATABASE'] ?? 'guidegenie';
-        final username = dotenv.env['PGUSER'] ?? 'postgres';
-        final password = dotenv.env['PGPASSWORD'] ?? 'postgres';
-        
-        // Connect using individual parameters
-        _connection = PgPool(
-          PgEndpoint(
-            host: host,
-            port: port,
-            database: database,
-            username: username,
-            password: password,
-          ),
-          settings: PgPoolSettings(
-            maxConnectionAge: const Duration(hours: 1),
-            sslMode: SslMode.require,
-          ),
-        );
-        
-        print('DatabaseService: Connected using individual connection parameters');
-      }
+      // Create a new connection
+      _connection = PostgreSQLConnection(
+        host,
+        port,
+        database,
+        username: username,
+        password: password,
+        useSSL: true,
+      );
+      
+      // Open the connection
+      await _connection!.open();
       
       // Test the connection
-      final conn = await (_connection as PgPool).connect();
-      await conn.execute('SELECT 1');
-      await conn.close();
+      await _connection!.query('SELECT 1');
       
       _isConnected = true;
       print('DatabaseService: Successfully connected to database');
@@ -105,7 +74,7 @@ class DatabaseService {
   
   // Execute a database operation with error handling
   Future<dynamic> _executeDB(
-    Future<dynamic> Function(PgConnection conn) dbOperation, 
+    Future<dynamic> Function(PostgreSQLConnection conn) dbOperation, 
     {dynamic defaultValue}
   ) async {
     await connect();
@@ -120,23 +89,12 @@ class DatabaseService {
       return defaultValue;
     }
     
-    PgConnection? conn;
     try {
-      // Get a connection from the pool
-      conn = await (_connection as PgPool).connect();
-      
       // Execute the operation
-      final result = await dbOperation(conn);
-      
-      return result;
+      return await dbOperation(_connection!);
     } catch (e) {
       print('DatabaseService: Error executing operation: $e');
       return defaultValue;
-    } finally {
-      // Always release the connection back to the pool
-      if (conn != null) {
-        await conn.close();
-      }
     }
   }
   
@@ -147,9 +105,7 @@ class DatabaseService {
     }
     
     return await _executeDB((conn) async {
-      final results = await conn.execute(
-        'SELECT * FROM games ORDER BY title',
-      );
+      final results = await conn.query('SELECT * FROM games ORDER BY title');
       
       return results.map((row) {
         return Game(
@@ -174,9 +130,9 @@ class DatabaseService {
     }
     
     return await _executeDB((conn) async {
-      final results = await conn.execute(
+      final results = await conn.query(
         'SELECT * FROM games WHERE id = @id',
-        parameters: {'id': id},
+        substitutionValues: {'id': id},
       );
       
       if (results.isEmpty) {
@@ -202,8 +158,8 @@ class DatabaseService {
     }
     
     return await _executeDB((conn) async {
-      final results = await conn.execute(
-        'SELECT * FROM games WHERE is_featured = true ORDER BY title',
+      final results = await conn.query(
+        'SELECT * FROM games WHERE is_featured = true ORDER BY title'
       );
       
       return results.map((row) {
@@ -229,8 +185,8 @@ class DatabaseService {
     }
     
     return await _executeDB((conn) async {
-      final results = await conn.execute(
-        'SELECT * FROM games ORDER BY rating DESC LIMIT 5',
+      final results = await conn.query(
+        'SELECT * FROM games ORDER BY rating DESC LIMIT 5'
       );
       
       return results.map((row) {
@@ -253,9 +209,9 @@ class DatabaseService {
     }
     
     return await _executeDB((conn) async {
-      final results = await conn.execute(
+      final results = await conn.query(
         'SELECT * FROM guides WHERE game_id = @gameId',
-        parameters: {'gameId': gameId},
+        substitutionValues: {'gameId': gameId},
       );
       
       return results.map((row) {
@@ -289,9 +245,9 @@ class DatabaseService {
     }
     
     return await _executeDB((conn) async {
-      final results = await conn.execute(
+      final results = await conn.query(
         'SELECT * FROM guides WHERE id = @id',
-        parameters: {'id': id},
+        substitutionValues: {'id': id},
       );
       
       if (results.isEmpty) {
