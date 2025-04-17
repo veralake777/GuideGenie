@@ -9,6 +9,7 @@ class User {
   final List<String> downvotedPosts;
   final List<String> upvotedComments;
   final List<String> downvotedComments;
+  final List<String> bookmarkedPosts; // Added for bookmarks feature
   final int reputation;
   final DateTime createdAt;
   final DateTime lastLogin;
@@ -24,6 +25,7 @@ class User {
     required this.downvotedPosts,
     required this.upvotedComments,
     required this.downvotedComments,
+    required this.bookmarkedPosts, // Added for bookmarks feature
     required this.reputation,
     required this.createdAt,
     required this.lastLogin,
@@ -51,6 +53,9 @@ class User {
       downvotedComments: json['downvotedComments'] != null 
           ? List<String>.from(json['downvotedComments'] as List)
           : [],
+      bookmarkedPosts: json['bookmarkedPosts'] != null 
+          ? List<String>.from(json['bookmarkedPosts'] as List)
+          : [],
       reputation: json['reputation'] as int? ?? 0,
       createdAt: json['createdAt'] != null 
           ? DateTime.parse(json['createdAt'] as String)
@@ -73,6 +78,7 @@ class User {
       'downvotedPosts': downvotedPosts,
       'upvotedComments': upvotedComments,
       'downvotedComments': downvotedComments,
+      'bookmarkedPosts': bookmarkedPosts,
       'reputation': reputation,
       'createdAt': createdAt.toIso8601String(),
       'lastLogin': lastLogin.toIso8601String(),
