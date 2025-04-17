@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:guide_genie/models/guide_post.dart';
 import 'package:guide_genie/models/post.dart';
 import 'package:guide_genie/models/comment.dart';
-import 'package:guide_genie/services/api_service.dart';
+import 'package:guide_genie/services/api_service_new.dart';
 
 class PostProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();

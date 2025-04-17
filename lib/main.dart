@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -11,8 +12,18 @@ import 'providers/auth_provider.dart';
 import 'providers/game_provider.dart';
 import 'providers/post_provider.dart';
 import 'utils/constants.dart';
+import 'services/database_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+  
+  // Initialize database service
+  final db = DatabaseService();
+  await db.connect();
+  
   runApp(const MyApp());
 }
 
