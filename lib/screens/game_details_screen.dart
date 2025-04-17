@@ -64,6 +64,13 @@ class _GameDetailsScreenState extends State<GameDetailsScreen> with SingleTicker
                 : widget.gameId == '3'
                     ? 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt81e8a3e8ac6c05e7/63b8a86598f3080c466a9ae4/Val_Ep6_Homepage_Act1_1920x1080.jpg'
                     : 'https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/blog/hero/mwiii/MWIII-LAUNCH-TACTICS-TOUT.jpg',
+        iconUrl: widget.gameId == '1'
+            ? 'https://cdn2.unrealengine.com/en-22br-zerobuild-egs-launcher-2560x1440-2560x1440-a6f40c2ccea5.jpg'
+            : widget.gameId == '2'
+                ? 'https://cdn1.epicgames.com/offer/24b9b5e323bc40eea252a10cdd3b2f10/LOL_2560x1440-98749e0d718e82d27a084941939bc9d3'
+                : widget.gameId == '3'
+                    ? 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt81e8a3e8ac6c05e7/63b8a86598f3080c466a9ae4/Val_Ep6_Homepage_Act1_1920x1080.jpg'
+                    : 'https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/blog/hero/mwiii/MWIII-LAUNCH-TACTICS-TOUT.jpg',
         rating: widget.gameId == '1' ? 4.8 : widget.gameId == '2' ? 4.7 : widget.gameId == '3' ? 4.9 : 4.6,
         description: widget.gameId == '1'
             ? 'A battle royale game where 100 players fight to be the last person standing.'

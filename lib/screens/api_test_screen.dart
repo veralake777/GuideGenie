@@ -13,7 +13,7 @@ class _ApiTestScreenState extends State<ApiTestScreen> {
   final RestApiService _apiService = RestApiService();
   bool _isLoading = false;
   bool _isApiHealthy = false;
-  List<Map<String, dynamic>> _games = [];
+  List<dynamic> _games = []; // Change type to accept both Game objects and Map
   String _errorMessage = '';
 
   @override

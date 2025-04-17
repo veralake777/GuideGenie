@@ -67,8 +67,27 @@ class RestApiService {
   }
   
   // Create new game - Using Firebase
-  Future<Game?> createGame(Game game) async {
+  Future<Game?> createGame(dynamic gameInput) async {
     try {
+      Game game;
+      
+      // Handle both Game object and Map input
+      if (gameInput is Game) {
+        game = gameInput;
+      } else if (gameInput is Map<String, dynamic>) {
+        // Convert map to Game object
+        game = Game(
+          id: gameInput['id'] ?? '',
+          name: gameInput['name'] ?? '',
+          description: gameInput['description'] ?? '',
+          iconUrl: gameInput['icon_url'] ?? '',
+          imageUrl: gameInput['icon_url'] ?? '',
+          status: gameInput['status'] ?? 'active',
+        );
+      } else {
+        throw ArgumentError('Invalid game input type');
+      }
+      
       // Save to Firestore
       final createdGame = await _firestoreService.createGame(game);
       
