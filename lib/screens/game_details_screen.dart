@@ -43,7 +43,7 @@ class _GameDetailsScreenState extends State<GameDetailsScreen> with SingleTicker
       isLoading = false;
       game = Game(
         id: widget.gameId,
-        title: widget.gameId == '1' 
+        name: widget.gameId == '1' 
             ? 'Fortnite' 
             : widget.gameId == '2'
                 ? 'League of Legends'

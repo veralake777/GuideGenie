@@ -103,9 +103,10 @@ With the new season underway, the meta has shifted significantly. Here's a compr
       
       game = Game(
         id: '1',
-        title: 'Fortnite',
+        name: 'Fortnite',
         genre: 'Battle Royale',
         imageUrl: 'https://cdn2.unrealengine.com/en-22br-zerobuild-egs-launcher-2560x1440-2560x1440-a6f40c2ccea5.jpg',
+        iconUrl: 'https://cdn2.unrealengine.com/en-22br-zerobuild-egs-launcher-2560x1440-2560x1440-a6f40c2ccea5.jpg',
         rating: 4.8,
         description: 'A battle royale game where 100 players fight to be the last person standing.',
       );
