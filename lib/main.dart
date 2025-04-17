@@ -27,13 +27,26 @@ void main() async {
   // Load environment variables
   await dotenv.load(fileName: ".env");
   
-  // Initialize database service
-  final db = DatabaseService();
-  await db.connect();
-  
-  // Initialize database with tables and seed data
-  final dbInit = DatabaseInitializer();
-  await dbInit.initialize();
+  // Initialize Firebase
+  try {
+    await FirebaseService.instance.initialize();
+    print('Firebase initialized successfully');
+  } catch (e) {
+    print('Error initializing Firebase: $e');
+    
+    // Initialize database service as fallback
+    try {
+      final db = DatabaseService();
+      await db.connect();
+      
+      // Initialize database with tables and seed data
+      final dbInit = DatabaseInitializer();
+      await dbInit.initialize();
+      print('Fallback database initialized successfully');
+    } catch (dbError) {
+      print('Error initializing fallback database: $dbError');
+    }
+  }
   
   runApp(const MyApp());
 }
