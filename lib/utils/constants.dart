@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   // App info
-  static const String appName = 'Guide Genie';
+  static const String appName = 'GuideGenie';
   static const String appVersion = '1.0.0';
   static const String appTagline = 'Your ultimate game guide companion';
   
