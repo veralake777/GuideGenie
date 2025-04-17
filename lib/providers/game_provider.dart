@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:guide_genie/models/game.dart';
-import 'package:guide_genie/services/api_service.dart';
+import 'package:guide_genie/services/api_service_new.dart';
 
 enum GameCategory {
   battleRoyale,

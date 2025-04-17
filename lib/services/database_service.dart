@@ -88,27 +88,27 @@ class DatabaseService {
   }
   
   // Execute a database operation with error handling
-  Future<T> _executeDB<T>(
-    Future<T> Function(Connection conn) dbOperation, 
-    {T? defaultValue}
+  Future<dynamic> _executeDB(
+    Future<dynamic> Function(Connection conn) dbOperation, 
+    {dynamic defaultValue}
   ) async {
     await connect();
     
     if (_useMockData) {
       print('DatabaseService: Using mock data, skipping DB operation');
-      return defaultValue as T;
+      return defaultValue;
     }
     
     if (_connection == null) {
       print('DatabaseService: Connection is null, cannot execute operation');
-      return defaultValue as T;
+      return defaultValue;
     }
     
     try {
       return await dbOperation(_connection!);
     } catch (e) {
       print('DatabaseService: Error executing operation: $e');
-      return defaultValue as T;
+      return defaultValue;
     }
   }
   
@@ -118,7 +118,7 @@ class DatabaseService {
       return _getMockGames();
     }
     
-    return await _executeDB<List<Game>>((conn) async {
+    return await _executeDB((conn) async {
       final results = await conn.execute(
         'SELECT * FROM games ORDER BY title',
       );
@@ -145,7 +145,7 @@ class DatabaseService {
       );
     }
     
-    return await _executeDB<Game?>((conn) async {
+    return await _executeDB((conn) async {
       final results = await conn.execute(
         'SELECT * FROM games WHERE id = @id',
         parameters: {'id': id},
@@ -173,7 +173,7 @@ class DatabaseService {
       return _getMockGames().where((game) => game.isFeatured).toList();
     }
     
-    return await _executeDB<List<Game>>((conn) async {
+    return await _executeDB((conn) async {
       final results = await conn.execute(
         'SELECT * FROM games WHERE is_featured = true ORDER BY title',
       );
@@ -200,7 +200,7 @@ class DatabaseService {
       return games.take(5).toList();
     }
     
-    return await _executeDB<List<Game>>((conn) async {
+    return await _executeDB((conn) async {
       final results = await conn.execute(
         'SELECT * FROM games ORDER BY rating DESC LIMIT 5',
       );
@@ -224,7 +224,7 @@ class DatabaseService {
       return _getMockGuides().where((guide) => guide.gameId == gameId).toList();
     }
     
-    return await _executeDB<List<GuidePost>>((conn) async {
+    return await _executeDB((conn) async {
       final results = await conn.execute(
         'SELECT * FROM guides WHERE game_id = @gameId',
         parameters: {'gameId': gameId},
@@ -260,7 +260,7 @@ class DatabaseService {
       );
     }
     
-    return await _executeDB<GuidePost?>((conn) async {
+    return await _executeDB((conn) async {
       final results = await conn.execute(
         'SELECT * FROM guides WHERE id = @id',
         parameters: {'id': id},

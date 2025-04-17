@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:guide_genie/models/user.dart';
-import 'package:guide_genie/services/api_service.dart';
+import 'package:guide_genie/services/api_service_new.dart';
 import 'package:guide_genie/services/storage_service.dart';
 
 class AuthProvider with ChangeNotifier {
