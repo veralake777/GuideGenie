@@ -110,6 +110,16 @@ class AppDrawer extends StatelessWidget {
                 
                 _buildDrawerItem(
                   context,
+                  icon: Icons.api,
+                  title: 'API Test',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, AppConstants.apiTestRoute);
+                  },
+                ),
+                
+                _buildDrawerItem(
+                  context,
                   icon: Icons.info_outline,
                   title: 'About',
                   onTap: () {
