@@ -17,9 +17,11 @@ import 'screens/api_test_screen.dart';
 import 'providers/auth_provider.dart';
 import 'providers/game_provider.dart';
 import 'providers/post_provider.dart';
+import 'providers/firebase_provider.dart';
 import 'utils/constants.dart';
 import 'services/database_service.dart';
 import 'services/db_init.dart';
+import 'services/firebase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +60,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => FirebaseProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => GameProvider()),
         ChangeNotifierProvider(create: (_) => PostProvider()),
