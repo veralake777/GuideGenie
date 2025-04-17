@@ -159,17 +159,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               context,
                               onSeeAllPressed: () {
                                 // Navigate to all games screen
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text('All Games feature coming soon!'),
-                                    duration: const Duration(seconds: 2),
-                                    backgroundColor: AppConstants.gamingDarkPurple,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusS),
-                                    ),
-                                  ),
-                                );
+                                Navigator.pushNamed(context, AppConstants.allGamesRoute);
                               },
                             ),
                             
@@ -188,17 +178,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               context,
                               onSeeAllPressed: () {
                                 // Navigate to all guides screen
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text('All Guides feature coming soon!'),
-                                    duration: const Duration(seconds: 2),
-                                    backgroundColor: AppConstants.gamingDarkPurple,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusS),
-                                    ),
-                                  ),
-                                );
+                                Navigator.pushNamed(context, AppConstants.allGuidesRoute);
                               },
                             ),
                             

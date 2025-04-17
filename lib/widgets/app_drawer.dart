@@ -59,16 +59,18 @@ class AppDrawer extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(context);
                     // Navigate to games list screen
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('All Games feature coming soon!'),
-                        duration: const Duration(seconds: 2),
-                        backgroundColor: AppConstants.gamingDarkPurple,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusS),
-                        ),
-                      ),
-                    );
+                    Navigator.pushNamed(context, AppConstants.allGamesRoute);
+                  },
+                ),
+                
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.menu_book,
+                  title: 'All Guides',
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Navigate to guides list screen
+                    Navigator.pushNamed(context, AppConstants.allGuidesRoute);
                   },
                 ),
                 

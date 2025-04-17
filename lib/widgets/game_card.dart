@@ -5,17 +5,19 @@ import 'package:guide_genie/utils/constants.dart';
 class GameCard extends StatelessWidget {
   final Game game;
   final bool isCompact;
+  final Function()? onTap;
   
   const GameCard({
     Key? key,
     required this.game,
     this.isCompact = false,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
+      onTap: onTap ?? () {
         Navigator.pushNamed(
           context,
           AppConstants.gameDetailsRoute,

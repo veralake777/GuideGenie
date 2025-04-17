@@ -57,6 +57,8 @@ class AppConstants {
   static const String settingsRoute = '/settings';
   static const String accountRoute = '/account';
   static const String bookmarksRoute = '/bookmarks';
+  static const String allGamesRoute = '/all_games';
+  static const String allGuidesRoute = '/all_guides';
   
   // Padding
   static const double paddingXXS = 2.0;
