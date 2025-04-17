@@ -8,6 +8,7 @@ import 'screens/splash_screen.dart';
 import 'screens/game_details_screen.dart';
 import 'screens/post_details_screen.dart';
 import 'screens/account_screen.dart';
+import 'screens/bookmarks_screen.dart';
 import 'providers/auth_provider.dart';
 import 'providers/game_provider.dart';
 import 'providers/post_provider.dart';

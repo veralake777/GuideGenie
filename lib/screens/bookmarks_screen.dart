@@ -105,7 +105,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         ],
       ),
       body: Container(
-        decoration: UIHelper.gamingBackgroundDecoration(),
+        decoration: UIHelper.gamingGradientBackground(),
         child: isLoading
             ? const LoadingIndicator(message: 'Loading your bookmarks...')
             : !authProvider.isAuthenticated
@@ -160,7 +160,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                                       Navigator.pushNamed(
                                         context,
                                         AppConstants.postDetailsRoute,
-                                        arguments: guide.id,
+                                        arguments: {'postId': guide.id},
                                       );
                                     },
                                   ),

@@ -80,16 +80,7 @@ class AppDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.pop(context);
                       // Navigate to bookmarks screen
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Bookmarks feature coming soon!'),
-                          duration: const Duration(seconds: 2),
-                          backgroundColor: AppConstants.gamingDarkPurple,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusS),
-                          ),
-                        ),
-                      );
+                      Navigator.pushNamed(context, AppConstants.bookmarksRoute);
                     },
                   ),
                 ],
@@ -520,7 +511,7 @@ class AppDrawer extends StatelessWidget {
               
               // Copyright
               Text(
-                '© 2024 Guide Genie',
+                '© 2024 GuideGenie',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.5),
                   fontSize: 12,
