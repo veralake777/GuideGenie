@@ -1,87 +1,93 @@
+/// A utility class for form validation
 class ValidationHelper {
-  // Validate required fields
-  static String? validateRequired(String? value) {
+  /// Validates that a field is not empty
+  static String? validateNotEmpty(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'This field is required';
     }
     return null;
   }
-  
-  // Validate email format
+
+  /// Validates that a string is a valid URL
+  static String? validateUrl(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'This field is required';
+    }
+    
+    // Simple URL validation regex
+    final urlRegExp = RegExp(
+      r'^(http|https)://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?$',
+      caseSensitive: false,
+    );
+    
+    if (!urlRegExp.hasMatch(value.trim())) {
+      return 'Please enter a valid URL (e.g., https://example.com/image.jpg)';
+    }
+    
+    return null;
+  }
+
+  /// Validates that a string is a valid email
   static String? validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Email is required';
     }
     
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Enter a valid email address';
-    }
-    return null;
-  }
-  
-  // Validate URL format
-  static String? validateUrl(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'URL is required';
+    // Email validation regex
+    final emailRegExp = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    
+    if (!emailRegExp.hasMatch(value.trim())) {
+      return 'Please enter a valid email address';
     }
     
-    final urlRegex = RegExp(
-      r'^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$',
-    );
-    if (!urlRegex.hasMatch(value)) {
-      return 'Enter a valid URL';
-    }
     return null;
   }
-  
-  // Validate minimum length
-  static String? Function(String?) validateMinLength(int minLength) {
-    return (String? value) {
-      if (value == null || value.trim().isEmpty) {
-        return 'This field is required';
-      }
-      
-      if (value.trim().length < minLength) {
-        return 'Must be at least $minLength characters';
-      }
-      return null;
-    };
-  }
-  
-  // Validate password
+
+  /// Validates that a string meets password requirements
   static String? validatePassword(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Password is required';
     }
     
-    if (value.length < 8) {
-      return 'Password must be at least 8 characters';
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters long';
     }
     
-    if (!value.contains(RegExp(r'[A-Z]'))) {
-      return 'Password must contain at least one uppercase letter';
+    return null;
+  }
+
+  /// Validates that a string matches the given password
+  static String? validatePasswordMatch(String? value, String password) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Confirm password is required';
     }
     
-    if (!value.contains(RegExp(r'[a-z]'))) {
-      return 'Password must contain at least one lowercase letter';
-    }
-    
-    if (!value.contains(RegExp(r'[0-9]'))) {
-      return 'Password must contain at least one number';
+    if (value != password) {
+      return 'Passwords do not match';
     }
     
     return null;
   }
   
-  // Validate matching passwords
-  static String? validatePasswordMatch(String? value, String? match) {
+  /// Validates that a number is within a specific range
+  static String? validateNumberRange(String? value, {int min = 0, int max = 100}) {
     if (value == null || value.trim().isEmpty) {
-      return 'Please confirm your password';
+      return 'This field is required';
     }
     
-    if (value != match) {
-      return 'Passwords do not match';
+    final number = int.tryParse(value);
+    if (number == null) {
+      return 'Please enter a valid number';
+    }
+    
+    if (number < min) {
+      return 'Value must be at least $min';
+    }
+    
+    if (number > max) {
+      return 'Value must be no more than $max';
     }
     
     return null;

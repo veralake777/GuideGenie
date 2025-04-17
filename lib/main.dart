@@ -12,6 +12,7 @@ import 'screens/bookmarks_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/all_games_screen.dart';
 import 'screens/all_guides_screen.dart';
+import 'screens/create_game_screen.dart';
 import 'providers/auth_provider.dart';
 import 'providers/game_provider.dart';
 import 'providers/post_provider.dart';
@@ -227,6 +228,7 @@ class MyApp extends StatelessWidget {
           AppConstants.settingsRoute: (context) => const SettingsScreen(),
           AppConstants.allGamesRoute: (context) => const AllGamesScreen(),
           AppConstants.allGuidesRoute: (context) => const AllGuidesScreen(),
+          AppConstants.createGameRoute: (context) => const CreateGameScreen(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == AppConstants.gameDetailsRoute) {

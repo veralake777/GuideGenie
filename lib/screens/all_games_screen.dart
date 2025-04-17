@@ -77,6 +77,13 @@ class _AllGamesScreenState extends State<AllGamesScreen> {
         title: const Text('All Games'),
         elevation: 0,
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, AppConstants.createGameRoute);
+        },
+        backgroundColor: AppConstants.primaryNeon,
+        child: const Icon(Icons.add, color: Colors.black),
+      ),
       body: Container(
         decoration: UIHelper.gamingGradientBackground(),
         child: Stack(
