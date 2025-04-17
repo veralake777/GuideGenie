@@ -76,6 +76,30 @@ class PostProvider with ChangeNotifier {
     // Otherwise return empty list
     return [];
   }
+  
+  // Get all posts as GuidePost objects
+  Future<List<GuidePost>> getPosts() async {
+    if (_posts.isEmpty) {
+      await fetchPosts();
+    }
+    
+    return _posts.map((post) => GuidePost(
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      gameId: post.gameId,
+      gameName: post.gameName,
+      type: post.type,
+      authorId: post.authorId,
+      authorName: post.authorName,
+      authorAvatarUrl: post.authorAvatarUrl,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      likes: post.upvotes,
+      commentCount: post.commentCount,
+      tags: post.tags,
+    )).toList();
+  }
 
   // Fetch all posts
   Future<void> fetchPosts() async {

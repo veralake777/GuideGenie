@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PostProvider()),
       ],
       child: MaterialApp(
-        title: 'Guide Genie',
+        title: 'GuideGenie',
         theme: ThemeData(
           // Use dark theme as base
           brightness: Brightness.dark,
@@ -214,6 +214,7 @@ class MyApp extends StatelessWidget {
           AppConstants.loginRoute: (context) => const LoginScreen(),
           AppConstants.registerRoute: (context) => const RegisterScreen(),
           AppConstants.accountRoute: (context) => const AccountScreen(),
+          AppConstants.bookmarksRoute: (context) => const BookmarksScreen(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == AppConstants.gameDetailsRoute) {

@@ -17,6 +17,12 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _user != null && _token != null;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  
+  // Check if a post is bookmarked
+  bool isPostBookmarked(String postId) {
+    if (_user == null) return false;
+    return _user!.bookmarkedPosts.contains(postId);
+  }
 
   // Check if user is authenticated (on app start)
   Future<bool> checkAuth() async {
@@ -229,5 +235,85 @@ class AuthProvider with ChangeNotifier {
   bool isGameFavorite(String gameId) {
     if (_user == null) return false;
     return _user!.favoriteGames.contains(gameId);
+  }
+  
+  // Add post to bookmarks
+  Future<bool> addPostToBookmarks(String postId) async {
+    if (_user == null) return false;
+    
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // Update bookmarks list
+      final bookmarkedPosts = List<String>.from(_user!.bookmarkedPosts);
+      
+      if (!bookmarkedPosts.contains(postId)) {
+        bookmarkedPosts.add(postId);
+      }
+      
+      final updatedUser = _user!.copyWith(
+        bookmarkedPosts: bookmarkedPosts,
+      );
+      
+      await _apiService.updateUser(updatedUser.toJson());
+      
+      // Update local user data
+      _user = updatedUser;
+      await _storageService.saveUser(updatedUser.toJson());
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Remove post from bookmarks
+  Future<bool> removePostFromBookmarks(String postId) async {
+    if (_user == null) return false;
+    
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // Update bookmarks list
+      final bookmarkedPosts = List<String>.from(_user!.bookmarkedPosts);
+      bookmarkedPosts.remove(postId);
+      
+      final updatedUser = _user!.copyWith(
+        bookmarkedPosts: bookmarkedPosts,
+      );
+      
+      await _apiService.updateUser(updatedUser.toJson());
+      
+      // Update local user data
+      _user = updatedUser;
+      await _storageService.saveUser(updatedUser.toJson());
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+  
+  // Toggle bookmark status for a post
+  Future<bool> togglePostBookmark(String postId) async {
+    if (isPostBookmarked(postId)) {
+      return removePostFromBookmarks(postId);
+    } else {
+      return addPostToBookmarks(postId);
+    }
   }
 }
