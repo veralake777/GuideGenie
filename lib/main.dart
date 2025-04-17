@@ -9,6 +9,7 @@ import 'screens/game_details_screen.dart';
 import 'screens/post_details_screen.dart';
 import 'screens/account_screen.dart';
 import 'screens/bookmarks_screen.dart';
+import 'screens/settings_screen.dart';
 import 'providers/auth_provider.dart';
 import 'providers/game_provider.dart';
 import 'providers/post_provider.dart';
@@ -221,6 +222,7 @@ class MyApp extends StatelessWidget {
           AppConstants.registerRoute: (context) => const RegisterScreen(),
           AppConstants.accountRoute: (context) => const AccountScreen(),
           AppConstants.bookmarksRoute: (context) => const BookmarksScreen(),
+          AppConstants.settingsRoute: (context) => const SettingsScreen(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == AppConstants.gameDetailsRoute) {

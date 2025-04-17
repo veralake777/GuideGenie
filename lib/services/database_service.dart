@@ -15,11 +15,34 @@ class DatabaseService {
   bool _isConnected = false;
   bool _useMockData = false;
   
-  // Helper method to detect environment
-  bool get _isLocalEnvironment {
-    final useLocal = dotenv.env['USE_MOCK_DATA'] == 'true';
-    final disableDb = dotenv.env['DISABLE_DATABASE_IN_WEB'] == 'true' && kIsWeb;
-    return useLocal || disableDb;
+  // Helper methods to determine data source
+  bool get _shouldUseMockData {
+    // Check direct mock data flag
+    final useMockFlag = dotenv.env['USE_MOCK_DATA'] == 'true';
+    
+    // Check data source setting
+    final dataSource = dotenv.env['DATA_SOURCE']?.toLowerCase();
+    final useMockSource = dataSource == 'mock';
+    
+    // Check web environment flag
+    final disableDbInWeb = dotenv.env['DISABLE_DATABASE_IN_WEB'] == 'true' && kIsWeb;
+    
+    print('DatabaseService: USE_MOCK_DATA=${useMockFlag}, DATA_SOURCE=${dataSource}, DISABLE_DATABASE_IN_WEB=${disableDbInWeb}');
+    
+    // Use mock data if any of these conditions are true
+    return useMockFlag || useMockSource || disableDbInWeb;
+  }
+  
+  // Override to force mock data mode
+  void setMockDataMode(bool useMock) {
+    _useMockData = useMock;
+    
+    // Save choice to environment
+    dotenv.env['USE_MOCK_DATA'] = useMock.toString();
+    dotenv.env['DATA_SOURCE'] = useMock ? 'mock' : 'database';
+    
+    print('DatabaseService: Manually set to ${useMock ? "MOCK" : "LIVE"} data mode');
+    print('DatabaseService: Updated environment variables: USE_MOCK_DATA=${dotenv.env['USE_MOCK_DATA']}, DATA_SOURCE=${dotenv.env['DATA_SOURCE']}');
   }
   
   // General purpose method to execute SQL queries
@@ -65,7 +88,7 @@ class DatabaseService {
       await dotenv.load();
       
       // Check if we should use mock data
-      if (_isLocalEnvironment) {
+      if (_shouldUseMockData) {
         print('DatabaseService: Using mock data for development.');
         _useMockData = true;
         _isConnected = true; // Pretend we're connected
