@@ -36,14 +36,28 @@ class User {
       email: json['email'] as String,
       bio: json['bio'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
-      favoriteGames: (json['favoriteGames'] as List<dynamic>).cast<String>(),
-      upvotedPosts: (json['upvotedPosts'] as List<dynamic>).cast<String>(),
-      downvotedPosts: (json['downvotedPosts'] as List<dynamic>).cast<String>(),
-      upvotedComments: (json['upvotedComments'] as List<dynamic>).cast<String>(),
-      downvotedComments: (json['downvotedComments'] as List<dynamic>).cast<String>(),
-      reputation: json['reputation'] as int,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      lastLogin: DateTime.parse(json['lastLogin'] as String),
+      favoriteGames: json['favoriteGames'] != null 
+          ? List<String>.from(json['favoriteGames'] as List)
+          : [],
+      upvotedPosts: json['upvotedPosts'] != null 
+          ? List<String>.from(json['upvotedPosts'] as List)
+          : [],
+      downvotedPosts: json['downvotedPosts'] != null 
+          ? List<String>.from(json['downvotedPosts'] as List)
+          : [],
+      upvotedComments: json['upvotedComments'] != null 
+          ? List<String>.from(json['upvotedComments'] as List)
+          : [],
+      downvotedComments: json['downvotedComments'] != null 
+          ? List<String>.from(json['downvotedComments'] as List)
+          : [],
+      reputation: json['reputation'] as int? ?? 0,
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt'] as String)
+          : DateTime.now(),
+      lastLogin: json['lastLogin'] != null 
+          ? DateTime.parse(json['lastLogin'] as String)
+          : DateTime.now(),
     );
   }
 

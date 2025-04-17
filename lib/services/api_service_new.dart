@@ -191,10 +191,57 @@ class ApiService {
         'email': email,
         'avatarUrl': 'https://randomuser.me/api/portraits/lego/1.jpg',
         'token': _generateToken(userId),
+        'user': {
+          'id': userId,
+          'username': email.split('@')[0],
+          'email': email,
+          'avatarUrl': 'https://randomuser.me/api/portraits/lego/1.jpg',
+          'favoriteGames': [],
+          'bio': '',
+        }
       };
     } else {
       throw Exception('Invalid credentials');
     }
+  }
+  
+  // Register a new user
+  Future<Map<String, dynamic>> register(String username, String email, String password) async {
+    // In a real application, this would save user data to the database
+    final user = await registerUser(username, email, password);
+    return {
+      'token': _generateToken(user['id'] as String),
+      'user': {
+        'id': user['id'],
+        'username': username,
+        'email': email,
+        'avatarUrl': user['avatarUrl'],
+        'favoriteGames': [],
+        'bio': '',
+      }
+    };
+  }
+  
+  // Get current user data
+  Future<Map<String, dynamic>> getCurrentUser() async {
+    // In a real app, this would fetch the user data from the database based on token
+    // Here we'll just return a mock user
+    final userId = 'user-${_uuid.v4().substring(0, 8)}';
+    return {
+      'id': userId,
+      'username': 'CurrentUser',
+      'email': 'user@example.com',
+      'avatarUrl': 'https://randomuser.me/api/portraits/lego/2.jpg',
+      'favoriteGames': ['1', '3', '5'],
+      'bio': 'Gaming enthusiast and content creator',
+    };
+  }
+  
+  // Update user data
+  Future<Map<String, dynamic>> updateUser(Map<String, dynamic> userData) async {
+    // In a real app, this would update the user data in the database
+    // Here we'll just return the data that was passed in
+    return userData;
   }
   
   // Helper methods

@@ -5,13 +5,16 @@ import 'package:guide_genie/models/guide_post.dart';
 import 'package:postgres/postgres.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
+// Type to handle different database connection types
+typedef DatabaseConnection = dynamic;
+
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
   factory DatabaseService() => _instance;
   
   DatabaseService._internal();
   
-  Connection? _connection;
+  DatabaseConnection? _connection;
   bool _isConnected = false;
   bool _useMockData = false;
   
@@ -44,9 +47,19 @@ class DatabaseService {
       final databaseUrl = dotenv.env['DATABASE_URL'];
       
       if (databaseUrl != null && databaseUrl.isNotEmpty) {
-        // Connect using full database URL if available
+        // Parse the database URL to create an endpoint
+        final uri = Uri.parse(databaseUrl);
+        final endpoint = Endpoint(
+          host: uri.host,
+          database: uri.path.substring(1), // Remove leading slash
+          username: uri.userInfo.split(':')[0],
+          password: uri.userInfo.split(':')[1],
+          port: uri.port > 0 ? uri.port : 5432,
+        );
+        
+        // Connect using endpoint
         _connection = await Connection.open(
-          databaseUrl,
+          endpoint,
           settings: const ConnectionSettings(
             sslMode: SslMode.require,
           ),
@@ -89,7 +102,7 @@ class DatabaseService {
   
   // Execute a database operation with error handling
   Future<dynamic> _executeDB(
-    Future<dynamic> Function(Connection conn) dbOperation, 
+    Future<dynamic> Function(dynamic conn) dbOperation, 
     {dynamic defaultValue}
   ) async {
     await connect();
