@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:guide_genie/models/game.dart';
 import 'package:guide_genie/models/guide_post.dart';
-import 'package:postgres/postgres.dart';
+import 'package:postgres_pool/postgres_pool.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 // Type to handle different database connection types
@@ -47,20 +47,17 @@ class DatabaseService {
       final databaseUrl = dotenv.env['DATABASE_URL'];
       
       if (databaseUrl != null && databaseUrl.isNotEmpty) {
-        // Parse the database URL to create an endpoint
-        final uri = Uri.parse(databaseUrl);
-        final endpoint = Endpoint(
-          host: uri.host,
-          database: uri.path.substring(1), // Remove leading slash
-          username: uri.userInfo.split(':')[0],
-          password: uri.userInfo.split(':')[1],
-          port: uri.port > 0 ? uri.port : 5432,
-        );
-        
-        // Connect using endpoint
-        _connection = await Connection.open(
-          endpoint,
-          settings: const ConnectionSettings(
+        // Create a PostgreSQL pool using the full connection string
+        _connection = PgPool(
+          PgEndpoint(
+            host: dotenv.env['PGHOST'] ?? '',
+            port: int.tryParse(dotenv.env['PGPORT'] ?? '5432') ?? 5432,
+            database: dotenv.env['PGDATABASE'] ?? '',
+            username: dotenv.env['PGUSER'] ?? '',
+            password: dotenv.env['PGPASSWORD'] ?? '',
+          ),
+          settings: PgPoolSettings(
+            maxConnectionAge: const Duration(hours: 1),
             sslMode: SslMode.require,
           ),
         );
@@ -75,21 +72,27 @@ class DatabaseService {
         final password = dotenv.env['PGPASSWORD'] ?? 'postgres';
         
         // Connect using individual parameters
-        _connection = await Connection.open(
-          Endpoint(
+        _connection = PgPool(
+          PgEndpoint(
             host: host,
             port: port,
             database: database,
             username: username,
             password: password,
           ),
-          settings: const ConnectionSettings(
+          settings: PgPoolSettings(
+            maxConnectionAge: const Duration(hours: 1),
             sslMode: SslMode.require,
           ),
         );
         
         print('DatabaseService: Connected using individual connection parameters');
       }
+      
+      // Test the connection
+      final conn = await (_connection as PgPool).connect();
+      await conn.execute('SELECT 1');
+      await conn.close();
       
       _isConnected = true;
       print('DatabaseService: Successfully connected to database');
@@ -102,7 +105,7 @@ class DatabaseService {
   
   // Execute a database operation with error handling
   Future<dynamic> _executeDB(
-    Future<dynamic> Function(dynamic conn) dbOperation, 
+    Future<dynamic> Function(PgConnection conn) dbOperation, 
     {dynamic defaultValue}
   ) async {
     await connect();
@@ -117,11 +120,23 @@ class DatabaseService {
       return defaultValue;
     }
     
+    PgConnection? conn;
     try {
-      return await dbOperation(_connection!);
+      // Get a connection from the pool
+      conn = await (_connection as PgPool).connect();
+      
+      // Execute the operation
+      final result = await dbOperation(conn);
+      
+      return result;
     } catch (e) {
       print('DatabaseService: Error executing operation: $e');
       return defaultValue;
+    } finally {
+      // Always release the connection back to the pool
+      if (conn != null) {
+        await conn.close();
+      }
     }
   }
   

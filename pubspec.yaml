@@ -23,7 +23,7 @@ dependencies:
   sqflite: ^2.2.6
   path: ^1.8.2
   path_provider: ^2.0.15
-  postgres: ^3.4.8
+  postgres_pool: ^2.1.5  # Compatible pool version
   flutter_dotenv: ^5.1.0
   
   # Math and Vectors (required by Flutter)
