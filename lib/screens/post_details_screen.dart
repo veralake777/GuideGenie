@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:provider/provider.dart';
 import '../models/guide_post.dart';
 import '../models/game.dart';
+import '../services/api_service_new.dart';
+import '../providers/auth_provider.dart';
 
 class PostDetailsScreen extends StatefulWidget {
   final String postId;
@@ -38,6 +41,17 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
   Future<void> _loadPostData() async {
     // TODO: Replace with API call
     await Future.delayed(const Duration(milliseconds: 800));
+    
+    // Get current user
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.user;
+    
+    // Check if this post is bookmarked by the user
+    if (user != null && user.bookmarkedPosts.contains(widget.postId)) {
+      setState(() {
+        isBookmarked = true;
+      });
+    }
     
     // Sample data
     setState(() {
@@ -119,11 +133,46 @@ With the new season underway, the meta has shifted significantly. Here's a compr
             icon: Icon(
               isBookmarked ? Icons.bookmark : Icons.bookmark_border,
             ),
-            onPressed: () {
-              setState(() {
-                isBookmarked = !isBookmarked;
-              });
-              // TODO: Implement bookmark functionality with API
+            onPressed: () async {
+              // Get the API Service instance
+              final ApiService apiService = ApiService();
+              // Get current user from provider
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              final userId = authProvider.user?.id;
+              
+              if (userId != null && post != null) {
+                // Call API to toggle bookmark
+                final success = await apiService.toggleBookmark(userId, post!.id);
+                
+                if (success) {
+                  setState(() {
+                    isBookmarked = !isBookmarked;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isBookmarked ? 'Added to bookmarks' : 'Removed from bookmarks'
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to update bookmark'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              } else {
+                // Show login prompt if user is not signed in
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please sign in to bookmark guides'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
             },
           ),
           IconButton(

@@ -4,6 +4,7 @@ import 'package:guide_genie/models/game.dart';
 import 'package:guide_genie/models/guide_post.dart';
 import 'package:guide_genie/models/user.dart';
 import 'package:guide_genie/services/database_service.dart';
+import 'package:guide_genie/services/user_service.dart';
 import 'package:uuid/uuid.dart';
 import 'package:crypto/crypto.dart';
 
@@ -13,8 +14,9 @@ class ApiService {
   // Generate a UUID for IDs
   final Uuid _uuid = const Uuid();
   
-  // Database service
+  // Services
   final DatabaseService _db = DatabaseService();
+  final UserService _userService = UserService();
   
   // Get all games
   Future<List<Map<String, dynamic>>> getGames() async {
@@ -151,6 +153,29 @@ class ApiService {
     print('Voted ${isUpvote ? 'up' : 'down'} on post $postId');
   }
   
+  // Toggle bookmark status for a user and post
+  Future<bool> toggleBookmark(String userId, String postId) async {
+    try {
+      print('ApiService: Toggling bookmark for user $userId on post $postId');
+      
+      // Get the user
+      final user = await _userService.getUserById(userId);
+      if (user == null) {
+        print('ApiService: User not found with ID $userId');
+        return false;
+      }
+      
+      // Toggle the bookmark using UserService
+      final success = await _userService.toggleBookmark(user, postId);
+      
+      print('ApiService: Bookmark toggled successfully: $success');
+      return success;
+    } catch (e) {
+      print('ApiService: Error toggling bookmark: $e');
+      return false;
+    }
+  }
+  
   // User registration
   Future<Map<String, dynamic>> registerUser(String username, String email, String password) async {
     // In a real application, this would create a user in the database
@@ -239,9 +264,20 @@ class ApiService {
   
   // Update user data
   Future<Map<String, dynamic>> updateUser(Map<String, dynamic> userData) async {
-    // In a real app, this would update the user data in the database
-    // Here we'll just return the data that was passed in
-    return userData;
+    try {
+      // Convert the incoming data to a User object
+      final user = User.fromJson(userData);
+      
+      // Update the user with UserService
+      await _userService.updateUser(user);
+      
+      // Return the updated user data
+      return userData;
+    } catch (e) {
+      print('Error updating user: $e');
+      // Return the original data if an error occurs
+      return userData;
+    }
   }
   
   // Helper methods

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/guide_post.dart';
 import '../providers/auth_provider.dart';
 import '../providers/post_provider.dart';
+import '../services/api_service_new.dart';
 import '../utils/constants.dart';
 import '../utils/ui_helper.dart';
 import '../widgets/guide_list_item.dart';
@@ -36,6 +37,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final postProvider = Provider.of<PostProvider>(context, listen: false);
+      final apiService = ApiService();
       
       if (!authProvider.isAuthenticated) {
         setState(() {
@@ -45,8 +47,17 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         return;
       }
       
+      final user = authProvider.currentUser;
+      if (user == null) {
+        setState(() {
+          isLoading = false;
+          errorMessage = 'User information not available';
+        });
+        return;
+      }
+      
       // Get user's bookmarked post IDs
-      final bookmarkedIds = authProvider.currentUser?.bookmarkedPosts ?? [];
+      final bookmarkedIds = user.bookmarkedPosts;
       
       if (bookmarkedIds.isEmpty) {
         setState(() {
@@ -55,6 +66,8 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         });
         return;
       }
+      
+      print('Found ${bookmarkedIds.length} bookmarked posts: $bookmarkedIds');
       
       // Load all posts if needed
       if (postProvider.posts.isEmpty) {
@@ -66,11 +79,14 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
       final filtered = allGuides.where((guide) => 
         bookmarkedIds.contains(guide.id)).toList();
       
+      print('Displaying ${filtered.length} bookmarked guides');
+      
       setState(() {
         bookmarkedGuides = filtered;
         isLoading = false;
       });
     } catch (e) {
+      print('Error loading bookmarked guides: $e');
       setState(() {
         isLoading = false;
         errorMessage = 'Failed to load bookmarks: ${e.toString()}';

@@ -22,6 +22,38 @@ class DatabaseService {
     return useLocal || disableDb;
   }
   
+  // General purpose method to execute SQL queries
+  Future<List<Map<String, dynamic>>> executeSQL(String sql, {Map<String, dynamic>? substitutionValues}) async {
+    if (_useMockData) {
+      // Log SQL in mock mode
+      print('Mock SQL: $sql');
+      print('Mock Params: $substitutionValues');
+      return [];
+    }
+    
+    try {
+      final results = await _executeDB((conn) async {
+        return await conn.query(sql, substitutionValues: substitutionValues);
+      });
+      
+      // Convert PostgreSQL results to List<Map<String, dynamic>>
+      final mappedResults = <Map<String, dynamic>>[];
+      for (final row in results) {
+        final Map<String, dynamic> rowMap = {};
+        for (int i = 0; i < results.columnDescriptions.length; i++) {
+          final columnName = results.columnDescriptions[i].columnName;
+          rowMap[columnName] = row[i];
+        }
+        mappedResults.add(rowMap);
+      }
+      
+      return mappedResults;
+    } catch (e) {
+      print('Error executing SQL: $e');
+      return [];
+    }
+  }
+  
   // Connect to the database
   Future<void> connect() async {
     if (_isConnected) return;

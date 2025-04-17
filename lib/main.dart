@@ -14,6 +14,7 @@ import 'providers/game_provider.dart';
 import 'providers/post_provider.dart';
 import 'utils/constants.dart';
 import 'services/database_service.dart';
+import 'services/db_init.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,10 @@ void main() async {
   // Initialize database service
   final db = DatabaseService();
   await db.connect();
+  
+  // Initialize database with tables and seed data
+  final dbInit = DatabaseInitializer();
+  await dbInit.initialize();
   
   runApp(const MyApp());
 }
