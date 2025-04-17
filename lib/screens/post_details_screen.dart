@@ -44,7 +44,7 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     
     // Get current user
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final user = authProvider.user;
+    final user = authProvider.currentUser;
     
     // Check if this post is bookmarked by the user
     if (user != null && user.bookmarkedPosts.contains(widget.postId)) {
@@ -138,7 +138,7 @@ With the new season underway, the meta has shifted significantly. Here's a compr
               final ApiService apiService = ApiService();
               // Get current user from provider
               final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              final userId = authProvider.user?.id;
+              final userId = authProvider.currentUser?.id;
               
               if (userId != null && post != null) {
                 // Call API to toggle bookmark
