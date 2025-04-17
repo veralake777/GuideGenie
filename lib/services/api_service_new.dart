@@ -133,6 +133,59 @@ class ApiService {
     return post;
   }
   
+  // Create a new game
+  Future<Map<String, dynamic>> createGame(Map<String, dynamic> gameData) async {
+    try {
+      print('ApiService: Creating new game: ${gameData['title']}');
+      
+      // Insert the game into the database
+      await _db.executeSQL(
+        '''
+        INSERT INTO games (
+          id, 
+          title, 
+          genre, 
+          image_url, 
+          rating, 
+          description, 
+          developer, 
+          publisher, 
+          is_featured
+        )
+        VALUES (
+          @id, 
+          @title, 
+          @genre, 
+          @imageUrl, 
+          @rating, 
+          @description, 
+          @developer, 
+          @publisher, 
+          @isFeatured
+        )
+        ''',
+        substitutionValues: {
+          'id': gameData['id'],
+          'title': gameData['title'],
+          'genre': gameData['genre'],
+          'imageUrl': gameData['imageUrl'],
+          'rating': gameData['rating'],
+          'description': gameData['description'],
+          'developer': gameData['developer'],
+          'publisher': gameData['publisher'],
+          'isFeatured': gameData['isFeatured'],
+        },
+      );
+      
+      print('ApiService: Game created successfully.');
+      
+      return gameData;
+    } catch (e) {
+      print('ApiService: Error creating game: $e');
+      throw Exception('Failed to create game: $e');
+    }
+  }
+  
   // Create a new comment
   Future<Map<String, dynamic>> createComment(Map<String, dynamic> commentData) async {
     // In a real application, this would save to the database

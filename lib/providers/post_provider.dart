@@ -333,7 +333,7 @@ class PostProvider with ChangeNotifier {
     }
   }
 
-  // Search posts by query
+  // Search posts by query (returns Post list)
   List<Post> searchPosts(String query) {
     final lowerCaseQuery = query.toLowerCase();
     
@@ -344,6 +344,28 @@ class PostProvider with ChangeNotifier {
           post.authorName.toLowerCase().contains(lowerCaseQuery) ||
           post.tags.any((tag) => tag.toLowerCase().contains(lowerCaseQuery));
     }).toList();
+  }
+  
+  // Search posts by query (returns GuidePost list for UI)
+  List<GuidePost> searchGuidePosts(String query) {
+    final posts = searchPosts(query);
+    
+    return posts.map((post) => GuidePost(
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      gameId: post.gameId,
+      gameName: post.gameName,
+      type: post.type,
+      authorId: post.authorId,
+      authorName: post.authorName,
+      authorAvatarUrl: post.authorAvatarUrl,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      likes: post.upvotes,
+      commentCount: post.commentCount,
+      tags: post.tags,
+    )).toList();
   }
 
   // Get posts by type

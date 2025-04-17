@@ -54,11 +54,13 @@ class AppConstants {
   static const String profileRoute = '/profile';
   static const String searchRoute = '/search';
   static const String createPostRoute = '/create_post';
+  static const String createGameRoute = '/create_game';
   static const String settingsRoute = '/settings';
   static const String accountRoute = '/account';
   static const String bookmarksRoute = '/bookmarks';
   static const String allGamesRoute = '/all_games';
   static const String allGuidesRoute = '/all_guides';
+  static const String guideDetailsRoute = '/guide_details';
   
   // Padding
   static const double paddingXXS = 2.0;

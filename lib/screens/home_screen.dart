@@ -58,9 +58,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       final gameProvider = Provider.of<GameProvider>(context, listen: false);
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       
-      // Load games and posts concurrently
+      // Load games, featured games and posts concurrently
       await Future.wait([
         gameProvider.loadGames(),
+        gameProvider.fetchFeaturedGames(),
         postProvider.loadPosts(),
       ]);
       

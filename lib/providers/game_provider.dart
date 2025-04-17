@@ -115,6 +115,37 @@ class GameProvider with ChangeNotifier {
   List<Game> getFeaturedGames() {
     return _games.where((game) => game.isFeatured).toList();
   }
+  
+  // Fetch featured games directly from API
+  Future<List<Game>> fetchFeaturedGames() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final gamesData = await _apiService.getFeaturedGames();
+      final featuredGames = gamesData.map((data) => Game.fromJson(data)).toList();
+      
+      // Update local cache with featured games
+      for (final game in featuredGames) {
+        final index = _games.indexWhere((g) => g.id == game.id);
+        if (index >= 0) {
+          _games[index] = game;
+        } else {
+          _games.add(game);
+        }
+      }
+      
+      _isLoading = false;
+      notifyListeners();
+      return featuredGames;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      throw e;
+    }
+  }
 
   // Get popular games - based on rating and post count
   List<Game> getPopularGames() {
