@@ -10,17 +10,25 @@ class Comment {
   final DateTime updatedAt;
   final String? authorName;
   final String? authorAvatar;
+  final String? authorId;
+  final String? authorAvatarUrl;
+  final String? parentCommentId;
+  final List<String> childCommentIds;
 
   Comment({
     required this.id,
-    required this.guideId,
-    required this.userId,
     required this.content,
-    this.postId = '',
+    this.guideId = '',
+    this.userId = '',
+    required this.postId,
     this.upvotes = 0,
     this.downvotes = 0,
     this.authorName,
     this.authorAvatar,
+    this.authorId,
+    this.authorAvatarUrl,
+    this.parentCommentId,
+    this.childCommentIds = const [],
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : 
@@ -38,6 +46,12 @@ class Comment {
       downvotes: map['downvotes'] ?? 0,
       authorName: map['authorName'],
       authorAvatar: map['authorAvatar'],
+      authorId: map['authorId'],
+      authorAvatarUrl: map['authorAvatarUrl'],
+      parentCommentId: map['parentCommentId'],
+      childCommentIds: map['childCommentIds'] is List 
+        ? List<String>.from(map['childCommentIds']) 
+        : <String>[],
       createdAt: map['createdAt'] != null 
         ? (map['createdAt'] is DateTime 
             ? map['createdAt'] 
@@ -65,6 +79,10 @@ class Comment {
       'downvotes': downvotes,
       'authorName': authorName,
       'authorAvatar': authorAvatar,
+      'authorId': authorId,
+      'authorAvatarUrl': authorAvatarUrl,
+      'parentCommentId': parentCommentId,
+      'childCommentIds': childCommentIds,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -83,6 +101,10 @@ class Comment {
     int? downvotes,
     String? authorName,
     String? authorAvatar,
+    String? authorId,
+    String? authorAvatarUrl,
+    String? parentCommentId,
+    List<String>? childCommentIds,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -96,6 +118,10 @@ class Comment {
       downvotes: downvotes ?? this.downvotes,
       authorName: authorName ?? this.authorName,
       authorAvatar: authorAvatar ?? this.authorAvatar,
+      authorId: authorId ?? this.authorId,
+      authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
+      parentCommentId: parentCommentId ?? this.parentCommentId,
+      childCommentIds: childCommentIds ?? this.childCommentIds,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

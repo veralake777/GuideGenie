@@ -60,6 +60,9 @@ class User {
       bio: map['bio'],
     );
   }
+  
+  // Alias for fromMap to support JSON parsing
+  factory User.fromJson(Map<String, dynamic> json) => User.fromMap(json);
 
   Map<String, dynamic> toMap() {
     return {
@@ -80,6 +83,9 @@ class User {
       'bio': bio,
     };
   }
+  
+  // Alias for toMap to support JSON serialization
+  Map<String, dynamic> toJson() => toMap();
 
   User copyWith({
     String? id,
