@@ -2,9 +2,20 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+require('dotenv').config();
 
-// Import API handler
-const api = require('./api-handler');
+// Import Firebase API handlers
+let api;
+
+// Try to use Firebase API with fallback to in-memory API
+try {
+  api = require('./firebase-db');
+  console.log('Using Firebase database for API');
+} catch (error) {
+  console.error('Error loading Firebase API, falling back to in-memory storage:', error);
+  api = require('./api-handler');
+  console.log('Using in-memory database for API');
+}
 
 const PORT = process.env.PORT || 5000;
 
@@ -94,7 +105,8 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ 
         status: 'ok', 
-        message: 'Server is running with in-memory database',
+        message: 'Server is running with Firebase database',
+        usingFirebase: api === require('./firebase-db')
       }));
     }
     // Add new guide
@@ -113,7 +125,7 @@ const server = http.createServer(async (req, res) => {
       }
       
       try {
-        // Save to the in-memory API
+        // Save to the API
         const newGuide = await api.addGuide(gameId, body);
         
         // Return the new guide
@@ -140,7 +152,7 @@ const server = http.createServer(async (req, res) => {
       }
       
       try {
-        // Save to the in-memory API
+        // Save to the API
         const newTierList = await api.addTierList(gameId, body);
         
         // Return the new tier list
