@@ -198,11 +198,11 @@ class PostgresDatabase {
       // Fallback to default development values as last resort
       else {
         print('PostgresDatabase: No database connection info found, using fallback parameters...');
-        final host = 'localhost'; 
-        final port = 5432;
-        final database = 'postgres';
-        final username = 'postgres';
-        final password = '';
+        const host = 'localhost'; 
+        const port = 5432;
+        const database = 'postgres';
+        const username = 'postgres';
+        const password = '';
         
         print('PostgresDatabase: Using fallback connection details - Host: $host, Port: $port, DB: $database, User: $username');
         

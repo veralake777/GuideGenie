@@ -1,10 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:guide_genie/models/guide_post.dart';
 import 'package:guide_genie/models/post.dart';
 import 'package:guide_genie/models/comment.dart';
 import 'package:guide_genie/services/api_service_new.dart';
+import 'package:guide_genie/services/firebase_service.dart';
 
 class PostProvider with ChangeNotifier {
+  // Use late to initialize Firestore later
+  late FirebaseFirestore _firestore;
   final ApiService _apiService = ApiService();
   
   List<Post> _posts = [];
@@ -14,6 +18,7 @@ class PostProvider with ChangeNotifier {
   List<Comment> _comments = [];
   bool _isLoading = false;
   String? _errorMessage;
+  bool _initialized = false;  // Add initialized flag
 
   // Getters
   List<Post> get posts => _posts;
@@ -23,6 +28,37 @@ class PostProvider with ChangeNotifier {
   List<Comment> get comments => _comments;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  bool get isInitialized => _initialized;  // Add getter for initialization state
+
+  // Add initialization method
+  Future<void> initialize() async {
+    if (_initialized) return;
+    
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    
+    try {
+      // Make sure Firebase service is initialized
+      if (!FirebaseService.instance.isInitialized) {
+        await FirebaseService.instance.initialize();
+      }
+      
+      // Get Firestore from the service
+      _firestore = FirebaseService.instance.firestore;
+      // Load initial data
+      await loadPosts();
+      
+      _initialized = true;
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      print('Error initializing PostProvider: $e');
+      _errorMessage = 'Failed to initialize posts: $e';
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
   
   // Load all posts - combined loading
   Future<void> loadPosts() async {
@@ -44,7 +80,7 @@ class PostProvider with ChangeNotifier {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      throw e; // Re-throw for the caller to handle
+      rethrow; // Re-throw for the caller to handle
     }
   }
   
@@ -79,6 +115,10 @@ class PostProvider with ChangeNotifier {
   
   // Get all posts as GuidePost objects
   Future<List<GuidePost>> getPosts() async {
+    if (!_initialized) {
+      await initialize();
+    }
+
     if (_posts.isEmpty) {
       await fetchPosts();
     }
@@ -103,6 +143,10 @@ class PostProvider with ChangeNotifier {
 
   // Fetch all posts
   Future<void> fetchPosts() async {
+    if (!_initialized) {
+      await initialize();
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -121,6 +165,10 @@ class PostProvider with ChangeNotifier {
 
   // Fetch featured posts
   Future<void> fetchFeaturedPosts() async {
+    if (!_initialized) {
+      await initialize();
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -139,6 +187,10 @@ class PostProvider with ChangeNotifier {
 
   // Fetch latest posts
   Future<void> fetchLatestPosts() async {
+    if (!_initialized) {
+      await initialize();
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -157,6 +209,10 @@ class PostProvider with ChangeNotifier {
 
   // Fetch posts by game
   Future<void> fetchPostsByGame(String gameId) async {
+    if (!_initialized) {
+      await initialize();
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -175,6 +231,10 @@ class PostProvider with ChangeNotifier {
 
   // Fetch post details
   Future<void> fetchPostDetails(String postId) async {
+    if (!_initialized) {
+      await initialize();
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -208,6 +268,10 @@ class PostProvider with ChangeNotifier {
     String authorName,
     String authorAvatarUrl,
   ) async {
+    if (!_initialized) {
+      await initialize();
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -255,6 +319,10 @@ class PostProvider with ChangeNotifier {
     String authorName,
     String authorAvatarUrl,
   ) async {
+    if (!_initialized) {
+      await initialize();
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -302,6 +370,10 @@ class PostProvider with ChangeNotifier {
 
   // Vote on a post
   Future<bool> votePost(String postId, bool isUpvote) async {
+    if (!_initialized) {
+      await initialize();
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();

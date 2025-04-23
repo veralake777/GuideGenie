@@ -1,10 +1,7 @@
 import 'dart:convert';
-import 'dart:math';
-import 'package:guide_genie/models/game.dart';
 import 'package:guide_genie/models/post.dart';
 import 'package:guide_genie/models/user.dart';
 import 'package:guide_genie/models/comment.dart';
-import 'package:guide_genie/utils/constants.dart';
 import 'package:guide_genie/services/postgres_database.dart';
 import 'package:uuid/uuid.dart';
 import 'package:crypto/crypto.dart';
@@ -505,10 +502,8 @@ class ApiService {
       
       final List<Map<String, dynamic>> result = [];
       for (final comment in comments) {
-        if (comment != null) {  
-          result.add(comment.toJson());
-        }
-      }
+        result.add(comment.toJson());
+            }
       
       return result;
     } catch (e) {

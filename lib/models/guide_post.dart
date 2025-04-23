@@ -29,7 +29,7 @@ class GuidePost {
     this.likes = 0,
     this.commentCount = 0,
     this.tags = const [],
-  }) : this.updatedAt = updatedAt ?? createdAt;
+  }) : updatedAt = updatedAt ?? createdAt;
   
   // Named constructor for creating from Post
   factory GuidePost.fromPost(Map<String, dynamic> post) {

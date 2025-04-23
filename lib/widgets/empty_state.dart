@@ -105,7 +105,7 @@ class EmptyState extends StatelessWidget {
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppConstants.borderRadiusL),
-                  side: BorderSide(
+                  side: const BorderSide(
                     color: AppConstants.primaryNeon,
                     width: 2,
                   ),

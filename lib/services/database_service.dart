@@ -27,7 +27,7 @@ class DatabaseService {
     // Check web environment flag
     final disableDbInWeb = dotenv.env['DISABLE_DATABASE_IN_WEB'] == 'true' && kIsWeb;
     
-    print('DatabaseService: USE_MOCK_DATA=${useMockFlag}, DATA_SOURCE=${dataSource}, DISABLE_DATABASE_IN_WEB=${disableDbInWeb}');
+    print('DatabaseService: USE_MOCK_DATA=$useMockFlag, DATA_SOURCE=$dataSource, DISABLE_DATABASE_IN_WEB=$disableDbInWeb');
     
     // Use mock data if any of these conditions are true
     return useMockFlag || useMockSource || disableDbInWeb;

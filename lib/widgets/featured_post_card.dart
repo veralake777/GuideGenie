@@ -107,7 +107,7 @@ class FeaturedPostCard extends StatelessWidget {
                             const SizedBox(height: 2),
                             Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.videogame_asset,
                                   size: AppConstants.iconSizeS,
                                   color: Colors.grey,
@@ -161,7 +161,7 @@ class FeaturedPostCard extends StatelessWidget {
                   Text(
                     post.content,
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       fontSize: AppConstants.fontSizeS,
                       height: 1.5,
                     ),

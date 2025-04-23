@@ -7,7 +7,7 @@ class PostCard extends StatelessWidget {
   
   const PostCard({
     Key? key,
-    required this.post,
+    required this.post, required void Function() onTap,
   }) : super(key: key);
 
   @override
@@ -159,7 +159,7 @@ class PostCard extends StatelessWidget {
         Expanded(
           child: Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.videogame_asset,
                 size: AppConstants.iconSizeS,
                 color: Colors.grey,
@@ -183,7 +183,7 @@ class PostCard extends StatelessWidget {
         // Likes
         Row(
           children: [
-            Icon(
+            const Icon(
               Icons.thumb_up,
               size: AppConstants.iconSizeS,
               color: Colors.grey,
@@ -202,7 +202,7 @@ class PostCard extends StatelessWidget {
         // Comments
         Row(
           children: [
-            Icon(
+            const Icon(
               Icons.comment,
               size: AppConstants.iconSizeS,
               color: Colors.grey,

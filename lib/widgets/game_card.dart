@@ -131,7 +131,7 @@ class GameCard extends StatelessWidget {
     return Row(
       children: [
         // Rating
-        Icon(
+        const Icon(
           Icons.star,
           size: AppConstants.iconSizeS,
           color: Colors.amber,
@@ -145,7 +145,7 @@ class GameCard extends StatelessWidget {
         ),
         const SizedBox(width: AppConstants.paddingM),
         // Guide Count
-        Icon(
+        const Icon(
           Icons.book,
           size: AppConstants.iconSizeS,
           color: Colors.grey,

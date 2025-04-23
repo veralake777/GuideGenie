@@ -154,7 +154,7 @@ class _PostScreenState extends State<PostScreen> {
     final post = postProvider.selectedPost ?? widget.post;
     
     return Scaffold(
-      appBar: CustomAppBar(
+      appBar: const CustomAppBar(
         title: 'Post',
         showBackButton: true,
       ),

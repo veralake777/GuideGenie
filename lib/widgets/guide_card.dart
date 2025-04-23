@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:guide_genie/models/guide_post.dart';
-import 'package:guide_genie/utils/constants.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class GuideCard extends StatelessWidget {

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:guide_genie/providers/auth_provider.dart';
+import 'package:guide_genie/providers/game_provider.dart';
+import 'package:guide_genie/providers/post_provider.dart';
+import 'package:guide_genie/services/firebase_service.dart';
 import 'package:guide_genie/utils/constants.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -11,29 +14,87 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  String? _errorMessage;
+  bool _isInitializing = true;
+
   @override
   void initState() {
     super.initState();
-    _checkAuth();
+    _initializeServices();
   }
 
-  Future<void> _checkAuth() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.checkAuth();
-    
-    if (!mounted) return;
-    
-    // Delay for splash screen effect
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (!mounted) return;
-    
-    // Navigate to home screen
-    Navigator.pushReplacementNamed(context, AppConstants.homeRoute);
+  Future<void> _initializeServices() async {
+    print("SplashScreen: Starting service initialization");
+
+    try {
+      // First ensure Firebase is initialized
+      print("SplashScreen: Checking Firebase initialization");
+      if (!FirebaseService.instance.isInitialized) {
+        print("SplashScreen: Firebase not initialized, initializing now");
+        await FirebaseService.instance.initialize();
+        print("SplashScreen: Firebase initialized successfully");
+      } else {
+        print("SplashScreen: Firebase already initialized");
+      }
+      
+      // Then initialize providers in order
+      print("SplashScreen: Getting GameProvider");
+      final gameProvider = Provider.of<GameProvider>(context, listen: false);
+      await gameProvider.initialize();
+      
+      print("SplashScreen: Getting PostProvider");
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      if (postProvider != null) {
+        await postProvider.initialize();
+        print("SplashScreen: PostProvider initialized successfully");
+      }
+      
+      // Check auth status last (after all services are ready)
+      print("SplashScreen: Getting AuthProvider");
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      print("SplashScreen: Checking auth status");
+      await authProvider.checkAuth();
+      print("SplashScreen: Auth status checked successfully");
+      
+      if (!mounted) {
+        print("SplashScreen: Widget not mounted, returning");
+        return;
+      };
+      
+      // Delay for splash screen effect
+      print("SplashScreen: Delaying for splash screen effect");
+      await Future.delayed(const Duration(seconds: 2));
+      print("SplashScreen: Delay completed");
+      
+      if (!mounted) {
+      print("SplashScreen: Not mounted after delay, stopping");
+      return;
+      } 
+      
+      print("SplashScreen: Setting state to not initializing");
+      setState(() {
+        _isInitializing = false;
+      });
+      
+      // Navigate to home screen
+      print("SplashScreen: Navigating to home screen");
+      Navigator.pushReplacementNamed(context, AppConstants.homeRoute);
+      print("SplashScreen: Navigation completed");
+    } catch (e) {
+      print("ERROR IN SPLASH SCREEN: $e");
+      print("Stack trace: ${StackTrace.current}");
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isInitializing = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    print("SplashScreen: Building UI, error: $_errorMessage, initializing: $_isInitializing");
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -50,6 +111,29 @@ class _SplashScreenState extends State<SplashScreen> {
         ),
         child: Stack(
           children: [
+            // Background...
+          
+          // IMPORTANT: Add this at the top of your UI stack to ensure errors are visible
+          if (_errorMessage != null)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 20,
+              left: 20,
+              right: 20,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Error: $_errorMessage',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
             // Background grid pattern
             Positioned.fill(
               child: Opacity(
@@ -57,8 +141,8 @@ class _SplashScreenState extends State<SplashScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(
-                        'https://cdn.pixabay.com/photo/2018/03/18/15/26/technology-3237100_1280.jpg'
+                      image: const AssetImage(
+                        'assets/images/grid_pattern.png', // Replace with a local asset
                       ),
                       fit: BoxFit.cover,
                       colorFilter: ColorFilter.mode(
@@ -109,9 +193,9 @@ class _SplashScreenState extends State<SplashScreen> {
                   const SizedBox(height: AppConstants.paddingXL),
                   
                   // App name with gaming font and neon glow
-                  Text(
+                  const Text(
                     AppConstants.appName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: AppConstants.gamingFontFamily,
                       color: AppConstants.primaryNeon,
                       fontSize: 42,
@@ -148,10 +232,10 @@ class _SplashScreenState extends State<SplashScreen> {
                         width: 1,
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       AppConstants.appTagline,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: AppConstants.gamingFontFamily,
                         color: Colors.white,
                         fontSize: AppConstants.fontSizeM,
@@ -168,7 +252,32 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ),
                   
-                  const SizedBox(height: AppConstants.paddingXXL),
+                  const SizedBox(height: AppConstants.paddingXL),
+                  
+                  // Show error message if there is one
+                  if (_errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(AppConstants.paddingM),
+                      margin: const EdgeInsets.all(AppConstants.paddingM),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.red.withOpacity(0.5),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        'Error: $_errorMessage',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: AppConstants.fontSizeS,
+                        ),
+                      ),
+                    ),
+                  
+                  const SizedBox(height: AppConstants.paddingM),
                   
                   // Custom loading indicator with neon colors
                   Container(

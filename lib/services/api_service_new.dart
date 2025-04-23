@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:guide_genie/models/game.dart';
-import 'package:guide_genie/models/guide_post.dart';
 import 'package:guide_genie/models/user.dart';
 import 'package:guide_genie/services/database_service.dart';
 import 'package:guide_genie/services/user_service.dart';

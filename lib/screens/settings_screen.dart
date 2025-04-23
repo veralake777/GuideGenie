@@ -174,7 +174,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                       trailing: IconButton(
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.help_outline,
                           color: AppConstants.primaryNeon,
                         ),
@@ -183,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             context: context,
                             applicationName: AppConstants.appName,
                             applicationVersion: 'v${AppConstants.appVersion}',
-                            applicationIcon: Icon(
+                            applicationIcon: const Icon(
                               Icons.videogame_asset,
                               color: AppConstants.primaryNeon,
                               size: 40,
@@ -230,7 +230,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(AppConstants.paddingM),
             decoration: BoxDecoration(
               color: AppConstants.gamingDarkBlue.withOpacity(0.5),
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(AppConstants.borderRadiusM),
                 topRight: Radius.circular(AppConstants.borderRadiusM),
               ),

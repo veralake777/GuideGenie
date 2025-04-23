@@ -1,43 +1,0 @@
-Create an app that uses Flutter for an iOS and Android cross platform app based on this PRD.
-“Guide Genie” App - MVP - Product Requirements Summary
-Problem Statement
-As a competitive console or PC player I want to quickly access the latest tier lists and loadouts on my phone so that I can change my character or strategy at a glance without the need to minimize a window or go to my computer while I am playing. Requirements
-Login Page
-Home / Game Directory
-Title / Nav Bar / Hamburger 4x8-12 grid of game logos
-P0
-Fortnite League of Legends Valorant Street Fighter 6 Call of Duty Call of Duty: Warzone Marvel Rivals
-P1
-Apex Legends PUBG Overwatch Tekken 8 DOTA 2 Counter-Strike
-P2
-Guilty Gear Hearthstone World of Warcraft PoE Diablo
-FUTURE: Search Function
-Game Landing Pages
-P0
-Latest / Hottest Posts Game Specific Sections with UGC Feed (e.g. loadouts for COD, characters for street fighter)
-P1 Game Info & Summary (incl. current season/version) High Level Overview / Meta Strategy Short Summary Video Aggregate Written Guides Character Strategy Map Strategy P2
-API / Public Data (e.g. tier lists, rank character usage, loadouts)
-Account / Settings
-Data Request
-Tier List Data
-Loadout Data
-Rank Character Data
-Overall Rating Win/Loss %
-here is other ideation from my team Most of these big gaming companies have their data on lockdown. What if we did a reddit clone geared towards gamers? This would let the users be the "hero" for guides. So it would be geared towards UGC with a gamers skin/aesthetic and UX. Mobile first iOS and Android app?
-I think we could design the posts to be in a layout like
-POST
-{title} {author} {date posted}
-{videos/media - optional} {written walkthroughs - required} {sources/supporting links/user can link their other stuff?}
-{votes}
-COMMENTS {threaded comments w/ votes}
-example for me: https://github.com/RivaanRanawat/flutter-reddit-clone
-If I can find a good clone we could be up and running pretty quick.
-We could even have different areas.
-1. One where we have the tier lists, loadout, rank chars and this would be available for games if there are APIs/public data.
-2. A space for UGC where the best stuff rises to the top. We can create a network effect during marketing and users could get their dopamine fix lmao.
-I like this idea a lot. To your point we could still have landing pages with relevant content but have users generate and promote the more nuanced aspects of the game or systems that change often with updates that would be too difficult for us to keep up with.
-We could set up a tagging system that helps organize posts. Taking COD for example, tagging a post as an SMG build out would have it live under the SMG section for those types of weapons.
-For Tier Lists, we could probably just have a tier list section and the post w/ the most upvotes would be the "source of truth" but you would still have access to some variations/different opinions with the posts below it.
-The cool thing about this, like Reddit, it would allow users to solicit advice from the community. Could have a tab for "ask for help" or something for posts like that.
-Here is another example of how we could handle Tier Lists. Simply put together a matrix of the characters and let users vote.
-https://www.eventhubs.com/tiers/

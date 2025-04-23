@@ -129,12 +129,12 @@ class AppConstants {
       secondary: gamingNeonBlue,
       tertiary: primaryNeon,
     ),
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       elevation: 4,
       centerTitle: true,
       backgroundColor: gamingNeonPurple,
       foregroundColor: Colors.white,
-      titleTextStyle: const TextStyle(
+      titleTextStyle: TextStyle(
         fontSize: fontSizeL,
         fontWeight: FontWeight.bold,
         fontFamily: gamingFontFamily,
@@ -236,12 +236,12 @@ class AppConstants {
       background: gamingDarkBlue,
       surface: gamingDarkPurple,
     ),
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       elevation: 4,
       centerTitle: true,
       backgroundColor: gamingDarkPurple,
       foregroundColor: primaryNeon,
-      titleTextStyle: const TextStyle(
+      titleTextStyle: TextStyle(
         fontSize: fontSizeL,
         fontWeight: FontWeight.bold,
         color: primaryNeon,
@@ -321,12 +321,12 @@ class AppConstants {
     ),
     scaffoldBackgroundColor: const Color(0xFF050A18), // Deep space blue
     textTheme: TextTheme(
-      displayLarge: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
-      displayMedium: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
-      displaySmall: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
-      headlineLarge: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
-      headlineMedium: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
-      titleLarge: TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      displayLarge: const TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      displayMedium: const TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      displaySmall: const TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      headlineLarge: const TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      headlineMedium: const TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
+      titleLarge: const TextStyle(fontFamily: gamingFontFamily, fontWeight: FontWeight.bold, color: Colors.white),
       bodyLarge: TextStyle(color: Colors.white.withOpacity(0.9)),
       bodyMedium: TextStyle(color: Colors.white.withOpacity(0.8)),
     ),

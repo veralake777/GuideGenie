@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:guide_genie/models/game.dart';
 import 'package:guide_genie/providers/auth_provider.dart';
 import 'package:guide_genie/providers/game_provider.dart';
 import 'package:guide_genie/providers/post_provider.dart';
@@ -423,7 +422,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           'Add relevant tags to help others find your guide',
           style: TextStyle(
             fontSize: AppConstants.fontSizeS,
-            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
       ],

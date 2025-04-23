@@ -325,7 +325,7 @@ class ProfileScreen extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: AppConstants.fontSizeS,
-                        color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -362,7 +362,7 @@ class ProfileScreen extends StatelessWidget {
         style: TextStyle(
           color: isDestructive
               ? Theme.of(context).colorScheme.error
-              : Theme.of(context).colorScheme.onBackground,
+              : Theme.of(context).colorScheme.onSurface,
           fontWeight: isDestructive ? FontWeight.bold : FontWeight.normal,
         ),
       ),

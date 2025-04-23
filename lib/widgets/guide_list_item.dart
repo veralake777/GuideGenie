@@ -157,7 +157,7 @@ class GuideListItem extends StatelessWidget {
                             guide.authorName.isNotEmpty
                                 ? guide.authorName[0].toUpperCase()
                                 : '?',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppConstants.primaryNeon,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,

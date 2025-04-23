@@ -299,7 +299,7 @@ class FeaturedGameCard extends StatelessWidget {
             width: 1,
           ),
         ),
-        child: Row(
+        child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
@@ -307,8 +307,8 @@ class FeaturedGameCard extends StatelessWidget {
               color: AppConstants.accentNeon,
               size: 12,
             ),
-            const SizedBox(width: 4),
-            const Text(
+            SizedBox(width: 4),
+            Text(
               'Featured',
               style: TextStyle(
                 color: Colors.white,

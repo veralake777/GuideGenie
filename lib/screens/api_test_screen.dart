@@ -124,7 +124,7 @@ class _ApiTestScreenState extends State<ApiTestScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.error_outline,
                         color: Colors.red,
                         size: 48,
@@ -132,7 +132,7 @@ class _ApiTestScreenState extends State<ApiTestScreen> {
                       const SizedBox(height: 16),
                       Text(
                         _errorMessage,
-                        style: TextStyle(color: Colors.red),
+                        style: const TextStyle(color: Colors.red),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),

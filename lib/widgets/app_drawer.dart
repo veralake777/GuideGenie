@@ -328,7 +328,7 @@ class AppDrawer extends StatelessWidget {
                               user.username.isNotEmpty
                                   ? user.username[0].toUpperCase()
                                   : '?',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: AppConstants.gamingDarkPurple,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -362,7 +362,7 @@ class AppDrawer extends StatelessWidget {
                         width: 1,
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Elite',
                       style: TextStyle(
                         color: AppConstants.accentNeon,

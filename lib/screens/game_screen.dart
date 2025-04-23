@@ -193,16 +193,15 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (widget.game.description != null)
-                        Text(
-                          widget.game.description!,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        widget.game.description,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[700],
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 4),
                       Row(
                         children: [

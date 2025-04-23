@@ -59,7 +59,7 @@ class UIHelper {
         child: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage(
+              image: const NetworkImage(
                 'https://cdn.pixabay.com/photo/2018/03/18/15/26/technology-3237100_1280.jpg'
               ),
               fit: BoxFit.cover,
@@ -331,7 +331,7 @@ class UIHelper {
           if (onSeeAllPressed != null)
             TextButton(
               onPressed: onSeeAllPressed,
-              child: Text(
+              child: const Text(
                 'See All',
                 style: TextStyle(
                   color: AppConstants.secondaryNeon,
@@ -372,7 +372,7 @@ class UIHelper {
       actions: actions,
       bottom: bottom,
       flexibleSpace: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,

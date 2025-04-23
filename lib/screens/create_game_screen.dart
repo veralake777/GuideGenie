@@ -101,8 +101,8 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final neonColor = const Color(0xFF00FFFF); // Cyan neon
-    final fontFamily = 'Audiowide'; // Gaming font
+    const neonColor = Color(0xFF00FFFF); // Cyan neon
+    const fontFamily = 'Audiowide'; // Gaming font
 
     return Scaffold(
       appBar: AppBar(
@@ -129,7 +129,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Add a New Game',
                             style: TextStyle(
                               fontSize: 28,

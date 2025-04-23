@@ -39,7 +39,7 @@ class ErrorMessage extends StatelessWidget {
               message,
               style: TextStyle(
                 fontSize: AppConstants.fontSizeM,
-                color: Theme.of(context).colorScheme.onBackground.withOpacity(0.8),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
               ),
               textAlign: TextAlign.center,
             ),

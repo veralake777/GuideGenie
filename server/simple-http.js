@@ -8,7 +8,7 @@ require('dotenv').config();
 // Import Firebase database services
 const firebaseDb = require('./firebase-db');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Function to parse JSON body from requests
 function parseBody(req) {

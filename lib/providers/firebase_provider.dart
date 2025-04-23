@@ -6,8 +6,8 @@ import 'package:guide_genie/services/firebase_service.dart';
 import 'package:guide_genie/services/firestore_service.dart';
 
 class FirebaseProvider extends ChangeNotifier {
-  FirebaseService _firebaseService = FirebaseService.instance;
-  FirestoreService _firestoreService = FirestoreService();
+  final FirebaseService _firebaseService = FirebaseService.instance;
+  final FirestoreService _firestoreService = FirestoreService();
   
   firebase_auth.User? _authUser;
   app_models.User? _appUser;

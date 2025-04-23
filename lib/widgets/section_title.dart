@@ -46,7 +46,7 @@ class SectionTitle extends StatelessWidget {
               subtitle!,
               style: TextStyle(
                 fontSize: AppConstants.fontSizeS,
-                color: Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
           ],

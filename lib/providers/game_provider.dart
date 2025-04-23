@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:guide_genie/models/game.dart';
+import 'package:guide_genie/services/firebase_service.dart';
 import 'package:guide_genie/services/rest_api_service.dart';
 
 enum GameCategory {
@@ -19,21 +21,103 @@ enum GameCategory {
 }
 
 class GameProvider with ChangeNotifier {
+  // Use late to initialize Firestore later
+  late FirebaseFirestore _firestore;
   final RestApiService _apiService = RestApiService();
   
   List<Game> _games = [];
   Game? _selectedGame;
   bool _isLoading = false;
   String? _errorMessage;
+  bool _initialized = false;
 
   // Getters
   List<Game> get games => _games;
   Game? get selectedGame => _selectedGame;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  bool get isInitialized => _initialized;
+  
+  // Constructor without Firestore initialization
+  GameProvider();
+  
+  // Proper initialization method
+  Future<void> initialize() async {
+    if (_initialized) return;
+    
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    
+    try {
+      // Make sure Firebase service is initialized
+      if (!FirebaseService.instance.isInitialized) {
+        await FirebaseService.instance.initialize();
+      }
+    
+      // Now initialize Firestore
+      _firestore = FirebaseFirestore.instance;
+      
+      // Try to fetch games - this will use the REST API first
+      await fetchGames();
+      
+      // If REST API fetch failed and we have Firestore, try to fetch from Firebase
+      if (_games.isEmpty) {
+        await _fetchGamesFromFirestore();
+      }
+      
+      // Mark as initialized
+      _initialized = true;
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      print('Error initializing GameProvider: $e');
+      _errorMessage = 'Failed to initialize: $e';
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+  
+  // Private method to fetch games from Firestore
+  Future<void> _fetchGamesFromFirestore() async {
+    try {
+      final gamesSnapshot = await _firestore.collection('games').get();
+      
+      if (gamesSnapshot.docs.isEmpty) {
+        print('No games found in Firestore');
+        return;
+      }
+      
+      _games = gamesSnapshot.docs.map((doc) {
+        final data = doc.data();
+        return Game(
+          id: doc.id,
+          name: data['name'] ?? '',
+          description: data['description'] ?? '',
+          imageUrl: data['imageUrl'] ?? '',
+          genre: data['genre'] ?? '',
+          rating: (data['rating'] ?? 0).toDouble(),
+          postCount: data['postCount'] ?? 0,
+          isFeatured: data['isFeatured'] ?? false, 
+          iconUrl: '',
+          // Add other fields as needed
+        );
+      }).toList();
+      
+      print('Loaded ${_games.length} games from Firestore');
+    } catch (e) {
+      print('Error fetching games from Firestore: $e');
+      // Don't rethrow - just log, as this is a fallback method
+    }
+  }
 
   // Load/Fetch all games - alias for better naming
   Future<void> loadGames() async {
+    if (!_initialized) {
+      await initialize();
+      return;
+    }
+    
     return fetchGames();
   }
 
@@ -49,14 +133,31 @@ class GameProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _errorMessage = e.toString();
+      
+      // If REST API fails and we're initialized, try Firestore
+      if (_initialized) {
+        try {
+          await _fetchGamesFromFirestore();
+          if (_games.isNotEmpty) {
+            _errorMessage = null; // Clear error if we successfully got games from Firestore
+          }
+        } catch (firestoreError) {
+          // Just log this error, we already have an error message from the API
+          print('Firestore fallback also failed: $firestoreError');
+        }
+      }
+      
       _isLoading = false;
       notifyListeners();
-      throw e; // Re-throw for the caller to handle
     }
   }
 
   // Fetch game details
   Future<void> fetchGameDetails(String gameId) async {
+    if (!_initialized) {
+      await initialize();
+    }
+    
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -66,7 +167,34 @@ class GameProvider with ChangeNotifier {
       if (game != null) {
         _selectedGame = game;
       } else {
-        _errorMessage = 'Game not found';
+        // If REST API fails, try Firestore
+        if (_initialized) {
+          try {
+            final docSnapshot = await _firestore.collection('games').doc(gameId).get();
+            if (docSnapshot.exists) {
+              final data = docSnapshot.data()!;
+              _selectedGame = Game(
+                id: docSnapshot.id,
+                name: data['name'] ?? '',
+                description: data['description'] ?? '',
+                imageUrl: data['imageUrl'] ?? '',
+                genre: data['genre'] ?? '',
+                rating: (data['rating'] ?? 0).toDouble(),
+                postCount: data['postCount'] ?? 0,
+                isFeatured: data['isFeatured'] ?? false, 
+                iconUrl: '',
+                // Add other fields as needed
+              );
+            } else {
+              _errorMessage = 'Game not found';
+            }
+          } catch (firestoreError) {
+            print('Firestore game fetch failed: $firestoreError');
+            _errorMessage = 'Game not found';
+          }
+        } else {
+          _errorMessage = 'Game not found';
+        }
       }
       _isLoading = false;
       notifyListeners();
@@ -74,7 +202,6 @@ class GameProvider with ChangeNotifier {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      throw e; // Re-throw for the caller to handle
     }
   }
 
@@ -89,6 +216,10 @@ class GameProvider with ChangeNotifier {
 
   // Search games by query
   Future<List<Game>> searchGames(String query) async {
+    if (!_initialized) {
+      await initialize();
+    }
+    
     if (query.isEmpty) return _games;
     
     try {
@@ -121,6 +252,10 @@ class GameProvider with ChangeNotifier {
   
   // Fetch featured games
   Future<List<Game>> fetchFeaturedGames() async {
+    if (!_initialized) {
+      await initialize();
+    }
+    
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -139,33 +274,34 @@ class GameProvider with ChangeNotifier {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      throw e;
+      
+      // Fallback to local featured games
+      return getFeaturedGames();
     }
   }
 
-  // Get popular games - based on rating and post count
+  // The rest of your methods remain unchanged
   List<Game> getPopularGames() {
-    // Sort by a combination of rating and post count
     final sortedGames = List<Game>.from(_games);
     sortedGames.sort((a, b) {
-      // This formula gives a score based on rating and post count
       final scoreA = (a.rating * 0.7) + (a.postCount * 0.01);
       final scoreB = (b.rating * 0.7) + (b.postCount * 0.01);
-      return scoreB.compareTo(scoreA); // Descending order
+      return scoreB.compareTo(scoreA);
     });
     
-    // Return the top 5 games, or all if less than 5
     return sortedGames.take(sortedGames.length < 5 ? sortedGames.length : 5).toList();
   }
 
-  // Get games by genre
   List<Game> getGamesByGenre(String genre) {
     return _games.where((game) => 
       game.genre.toLowerCase() == genre.toLowerCase()).toList();
   }
 
-  // Create a new game
   Future<Game?> createGame(Game game) async {
+    if (!_initialized) {
+      await initialize();
+    }
+    
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -174,7 +310,6 @@ class GameProvider with ChangeNotifier {
       final createdGame = await _apiService.createGame(game);
       
       if (createdGame != null) {
-        // Add to local cache
         _games.add(createdGame);
       }
       
@@ -185,12 +320,15 @@ class GameProvider with ChangeNotifier {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      throw e;
+      return null;
     }
   }
 
-  // Update a game
   Future<Game?> updateGame(Game game) async {
+    if (!_initialized) {
+      await initialize();
+    }
+    
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -199,7 +337,6 @@ class GameProvider with ChangeNotifier {
       final updatedGame = await _apiService.updateGame(game);
       
       if (updatedGame != null) {
-        // Update in local cache
         final index = _games.indexWhere((g) => g.id == game.id);
         if (index >= 0) {
           _games[index] = updatedGame;
@@ -213,12 +350,15 @@ class GameProvider with ChangeNotifier {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      throw e;
+      return null;
     }
   }
 
-  // Delete a game
   Future<bool> deleteGame(String id) async {
+    if (!_initialized) {
+      await initialize();
+    }
+    
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -227,7 +367,6 @@ class GameProvider with ChangeNotifier {
       final success = await _apiService.deleteGame(id);
       
       if (success) {
-        // Remove from local cache
         _games.removeWhere((game) => game.id == id);
       }
       
@@ -238,11 +377,10 @@ class GameProvider with ChangeNotifier {
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
-      throw e;
+      return false;
     }
   }
 
-  // Reset selected game
   void resetSelectedGame() {
     _selectedGame = null;
     notifyListeners();

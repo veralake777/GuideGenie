@@ -65,7 +65,7 @@ class PopularGuideCard extends StatelessWidget {
                   ),
                   child: Text(
                     _formatGuideType(guide.type),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppConstants.primaryNeon,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
@@ -276,7 +276,7 @@ class PopularGuideCard extends StatelessWidget {
     
     // Return first 100 chars
     return content.length > 100 
-        ? content.substring(0, 100) + '...'
+        ? '${content.substring(0, 100)}...'
         : content;
   }
   
@@ -311,7 +311,7 @@ class PopularGuideCard extends StatelessWidget {
         child: guide.authorAvatarUrl.isEmpty
             ? Text(
                 guide.authorName.isNotEmpty ? guide.authorName[0].toUpperCase() : '?',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppConstants.gamingDarkPurple,
                   fontWeight: FontWeight.bold,
                   fontSize: 10,

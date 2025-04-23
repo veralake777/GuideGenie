@@ -23,15 +23,13 @@ class AppTheme {
     useMaterial3: true,
     brightness: Brightness.light,
     primaryColor: primaryColor,
-    colorScheme: ColorScheme.light(
+    colorScheme: const ColorScheme.light(
       primary: primaryColor,
       secondary: secondaryColor,
       error: errorColor,
-      background: lightBgColor,
       surface: lightCardColor,
       onPrimary: Colors.white,
       onSecondary: Colors.black,
-      onBackground: lightTextColor,
       onSurface: lightTextColor,
       onError: Colors.white,
     ),
@@ -43,7 +41,7 @@ class AppTheme {
       centerTitle: true,
       elevation: 0,
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       displayLarge: TextStyle(color: lightTextColor),
       displayMedium: TextStyle(color: lightTextColor),
       displaySmall: TextStyle(color: lightTextColor),
@@ -68,15 +66,13 @@ class AppTheme {
     useMaterial3: true,
     brightness: Brightness.dark,
     primaryColor: primaryColor,
-    colorScheme: ColorScheme.dark(
+    colorScheme: const ColorScheme.dark(
       primary: primaryColor,
       secondary: secondaryColor,
       error: errorColor,
-      background: darkBgColor,
       surface: darkCardColor,
       onPrimary: Colors.white,
       onSecondary: Colors.black,
-      onBackground: darkTextColor,
       onSurface: darkTextColor,
       onError: Colors.white,
     ),
@@ -88,7 +84,7 @@ class AppTheme {
       centerTitle: true,
       elevation: 0,
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       displayLarge: TextStyle(color: darkTextColor),
       displayMedium: TextStyle(color: darkTextColor),
       displaySmall: TextStyle(color: darkTextColor),
