@@ -176,7 +176,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                     color: Theme.of(context).colorScheme.surface,
                   ),
                   child: Image.asset(
-                    widget.game.logoUrl,
+                    widget.game.logoUrl ?? 'assets/images/placeholder.png',
                     fit: BoxFit.contain,
                   ),
                 ),

@@ -108,7 +108,7 @@ class _PostScreenState extends State<PostScreen> {
       return;
     }
     
-    final success = await postProvider.upvotePost(widget.post.id, user.id);
+    final success = await postProvider.votePost(widget.post.id, true);
     
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -426,7 +426,7 @@ class _PostScreenState extends State<PostScreen> {
       );
     }
     
-    final comments = postProvider.getThreadedComments();
+    final comments = postProvider.getThreadedComments(widget.post.id);
     
     if (comments.isEmpty) {
       return const Center(

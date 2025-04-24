@@ -43,26 +43,31 @@ class GameProvider with ChangeNotifier {
   
   // Proper initialization method
   Future<void> initialize() async {
+    print("GameProvider: Initializing GameProvider");
     if (_initialized) return;
-    
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
     
     try {
       // Make sure Firebase service is initialized
+      print("GameProvider: Checking Firebase initialization");
       if (!FirebaseService.instance.isInitialized) {
         await FirebaseService.instance.initialize();
       }
     
       // Now initialize Firestore
+      print("GameProvider: Initializing Firestore");
       _firestore = FirebaseFirestore.instance;
       
       // Try to fetch games - this will use the REST API first
+      print("GameProvider: Fetching games from REST API");
       await fetchGames();
       
       // If REST API fetch failed and we have Firestore, try to fetch from Firebase
       if (_games.isEmpty) {
+        print("GameProvider: No games from REST API, trying Firestore");
         await _fetchGamesFromFirestore();
       }
       
@@ -71,8 +76,8 @@ class GameProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      print('Error initializing GameProvider: $e');
-      _errorMessage = 'Failed to initialize: $e';
+      print('GameProvider: Error initializing GameProvider: $e');
+      _errorMessage = 'GameProvider: Failed to initialize: $e';
       _isLoading = false;
       notifyListeners();
     }
@@ -84,7 +89,7 @@ class GameProvider with ChangeNotifier {
       final gamesSnapshot = await _firestore.collection('games').get();
       
       if (gamesSnapshot.docs.isEmpty) {
-        print('No games found in Firestore');
+        print('GameProvider: No games found in Firestore');
         return;
       }
       
@@ -104,9 +109,9 @@ class GameProvider with ChangeNotifier {
         );
       }).toList();
       
-      print('Loaded ${_games.length} games from Firestore');
+      print('GameProvider: Loaded ${_games.length} games from Firestore');
     } catch (e) {
-      print('Error fetching games from Firestore: $e');
+      print('GameProvider: Error fetching games from Firestore: $e');
       // Don't rethrow - just log, as this is a fallback method
     }
   }
@@ -247,11 +252,13 @@ class GameProvider with ChangeNotifier {
 
   // Get featured games
   List<Game> getFeaturedGames() {
+    print("GameProvider: Getting featured games");
     return _games.where((game) => game.isFeatured).toList();
   }
   
   // Fetch featured games
   Future<List<Game>> fetchFeaturedGames() async {
+    print("GameProvider: Fetching featured games");
     if (!_initialized) {
       await initialize();
     }
@@ -282,6 +289,7 @@ class GameProvider with ChangeNotifier {
 
   // The rest of your methods remain unchanged
   List<Game> getPopularGames() {
+    print("GameProvider: Getting popular games");
     final sortedGames = List<Game>.from(_games);
     sortedGames.sort((a, b) {
       final scoreA = (a.rating * 0.7) + (a.postCount * 0.01);
@@ -298,6 +306,7 @@ class GameProvider with ChangeNotifier {
   }
 
   Future<Game?> createGame(Game game) async {
+    print("GameProvider: Creating game");
     if (!_initialized) {
       await initialize();
     }
@@ -325,6 +334,7 @@ class GameProvider with ChangeNotifier {
   }
 
   Future<Game?> updateGame(Game game) async {
+    print("GameProvider: Updating game");
     if (!_initialized) {
       await initialize();
     }
@@ -355,6 +365,7 @@ class GameProvider with ChangeNotifier {
   }
 
   Future<bool> deleteGame(String id) async {
+    print("GameProvider: Deleting game with ID: $id");
     if (!_initialized) {
       await initialize();
     }
@@ -382,6 +393,7 @@ class GameProvider with ChangeNotifier {
   }
 
   void resetSelectedGame() {
+    print("GameProvider: Resetting selected game");
     _selectedGame = null;
     notifyListeners();
   }

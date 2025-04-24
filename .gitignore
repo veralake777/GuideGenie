@@ -18,9 +18,7 @@ node_modules/
 *.ipr
 *.iws
 .idea/
-ios/build/
-ios/GoogleService-Info.plist
-GoogleService-Info.plist
+
 
 
 # The .vscode folder contains launch configuration and tasks you configure in
@@ -37,6 +35,12 @@ GoogleService-Info.plist
 .pub-cache/
 .pub/
 /build/
+ios
+GoogleService-Info.plist
+android
+macos
+windows
+linux
 
 # Symbolication related
 app.*.symbols
@@ -48,3 +52,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+.metadata
+firebase.json
+firepit-log.txt
+ios/Runner/Base.lproj/Main.storyboard
+ios/Runner.xcodeproj/project.pbxproj
+ios/Runner/Base.lproj/Main.storyboard
+ios/Runner.xcodeproj/project.pbxproj

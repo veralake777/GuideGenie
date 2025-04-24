@@ -316,4 +316,24 @@ class AuthProvider with ChangeNotifier {
       return addPostToBookmarks(postId);
     }
   }
+
+  bool hasUpvotedPost(String id) {
+    if (_user == null) return false;
+    return _user!.upvotedPosts.contains(id);
+  }
+
+  bool hasDownvotedPost(String id) {
+    if (_user == null) return false;
+    return _user!.downvotedPosts.contains(id);
+  }
+
+  bool hasUpvotedComment(String id) {
+    if (_user == null) return false;
+    return _user!.upvotedComments.contains(id);
+  }
+
+  bool hasDownvotedComment(String id) {
+    if (_user == null) return false;
+    return _user!.downvotedComments.contains(id);
+  }
 }

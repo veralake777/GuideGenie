@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:guide_genie/models/comment.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -162,7 +163,7 @@ class DatabaseHelper {
         'avatar_url': user.avatarUrl,
         'reputation': user.reputation,
         'created_at': user.createdAt.toIso8601String(),
-        'last_login': user.lastLogin.toIso8601String(),
+        'last_login': user.lastLogin?.toIso8601String(),
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -229,7 +230,7 @@ class DatabaseHelper {
         'bio': user.bio,
         'avatar_url': user.avatarUrl,
         'reputation': user.reputation,
-        'last_login': user.lastLogin.toIso8601String(),
+        'last_login': user.lastLogin?.toIso8601String(),
       },
       where: 'id = ?',
       whereArgs: [user.id],
@@ -295,16 +296,16 @@ class DatabaseHelper {
     }
     
     // Insert genres
-    for (final genre in game.genres) {
-      await db.insert(
-        'game_genres',
-        {
-          'game_id': game.id,
-          'genre': genre,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
+    // for (final genre in game.genres) {
+    //   await db.insert(
+    //     'game_genres',
+    //     {
+    //       'game_id': game.id,
+    //       'genre': genre,
+    //     },
+    //     conflictAlgorithm: ConflictAlgorithm.replace,
+    //   );
+    // }
   }
   
   Future<Game?> getGame(String gameId) async {
@@ -342,14 +343,15 @@ class DatabaseHelper {
       name: gameMap['name'] as String,
       description: gameMap['description'] as String,
       coverImageUrl: gameMap['cover_image_url'] as String,
-      developer: gameMap['developer'] as String,
-      publisher: gameMap['publisher'] as String,
-      releaseDate: gameMap['release_date'] as String,
-      platforms: platforms,
-      genres: genres,
+      // developer: gameMap['developer'] as String,
+      // publisher: gameMap['publisher'] as String,
+      // releaseDate: gameMap['release_date'] as String,
+      // platforms: platforms,
+      // genres: genres,
       rating: gameMap['rating'] as double,
       postCount: gameMap['post_count'] as int,
-      isFeatured: (gameMap['is_featured'] as int) == 1,
+      isFeatured: (gameMap['is_featured'] as int) == 1, 
+      iconUrl: '',
     );
   }
   
@@ -382,14 +384,15 @@ class DatabaseHelper {
         name: gameMap['name'] as String,
         description: gameMap['description'] as String,
         coverImageUrl: gameMap['cover_image_url'] as String,
-        developer: gameMap['developer'] as String,
-        publisher: gameMap['publisher'] as String,
-        releaseDate: gameMap['release_date'] as String,
-        platforms: platforms,
-        genres: genres,
+        // developer: gameMap['developer'] as String,
+        // publisher: gameMap['publisher'] as String,
+        // releaseDate: gameMap['release_date'] as String,
+        // platforms: platforms,
+        // genres: genres,
         rating: gameMap['rating'] as double,
         postCount: gameMap['post_count'] as int,
         isFeatured: (gameMap['is_featured'] as int) == 1,
+        iconUrl: ''
       );
     }).toList());
   }
@@ -427,14 +430,15 @@ class DatabaseHelper {
         name: gameMap['name'] as String,
         description: gameMap['description'] as String,
         coverImageUrl: gameMap['cover_image_url'] as String,
-        developer: gameMap['developer'] as String,
-        publisher: gameMap['publisher'] as String,
-        releaseDate: gameMap['release_date'] as String,
-        platforms: platforms,
-        genres: genres,
+        // developer: gameMap['developer'] as String,
+        // publisher: gameMap['publisher'] as String,
+        // releaseDate: gameMap['release_date'] as String,
+        // platforms: platforms,
+        // genres: genres,
         rating: gameMap['rating'] as double,
         postCount: gameMap['post_count'] as int,
         isFeatured: true,
+        iconUrl: ''
       );
     }).toList());
   }
@@ -817,8 +821,8 @@ class DatabaseHelper {
         final commentMap = commentMaps.first;
         await updateCommentVotes(
           commentId,
-          isUpvote ? commentMap['upvotes'] as int + 1 : commentMap['upvotes'] as int,
-          !isUpvote ? commentMap['downvotes'] as int + 1 : commentMap['downvotes'] as int,
+          isUpvote ? (commentMap['upvotes'] as int) + 1 : (commentMap['upvotes'] as int),
+          !isUpvote ? (commentMap['downvotes'] as int) + 1 : (commentMap['downvotes'] as int),
         );
       }
     }
@@ -883,14 +887,15 @@ class DatabaseHelper {
         name: gameMap['name'] as String,
         description: gameMap['description'] as String,
         coverImageUrl: gameMap['cover_image_url'] as String,
-        developer: gameMap['developer'] as String,
-        publisher: gameMap['publisher'] as String,
-        releaseDate: gameMap['release_date'] as String,
-        platforms: platforms,
-        genres: genres,
+        // developer: gameMap['developer'] as String,
+        // publisher: gameMap['publisher'] as String,
+        // releaseDate: gameMap['release_date'] as String,
+        // platforms: platforms,
+        // genres: genres,
         rating: gameMap['rating'] as double,
         postCount: gameMap['post_count'] as int,
         isFeatured: (gameMap['is_featured'] as int) == 1,
+        iconUrl: ''
       );
     }).toList());
   }

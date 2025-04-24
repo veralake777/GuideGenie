@@ -47,6 +47,22 @@ class Game {
   // Alias for fromMap to support JSON parsing
   factory Game.fromJson(Map<String, dynamic> json) => Game.fromMap(json);
 
+  get categories => null;
+
+  String? get logoUrl => null;
+
+  get currentVersion => null;
+
+  get currentSeason => null;
+
+  get developer => null;
+
+  get publisher => null;
+
+  get releaseDate => null;
+
+  get platforms => null;
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,

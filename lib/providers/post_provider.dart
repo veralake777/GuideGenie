@@ -32,6 +32,7 @@ class PostProvider with ChangeNotifier {
 
   // Add initialization method
   Future<void> initialize() async {
+    print("PostProvider: Initializing...");
     if (_initialized) return;
     
     _isLoading = true;
@@ -39,6 +40,7 @@ class PostProvider with ChangeNotifier {
     notifyListeners();
     
     try {
+      print("PostProvider: Initializing Firebase...");
       // Make sure Firebase service is initialized
       if (!FirebaseService.instance.isInitialized) {
         await FirebaseService.instance.initialize();
@@ -62,6 +64,7 @@ class PostProvider with ChangeNotifier {
   
   // Load all posts - combined loading
   Future<void> loadPosts() async {
+    print("PostProvider: Loading posts...");
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -86,6 +89,7 @@ class PostProvider with ChangeNotifier {
   
   // Get popular posts (most upvoted)
   List<GuidePost> getPopularPosts() {
+    print("PostProvider: Getting popular posts...");
     // If direct GuidePost data exists, convert and use
     if (_posts.isNotEmpty) {
       final sortedPosts = List<Post>.from(_posts);
@@ -115,11 +119,8 @@ class PostProvider with ChangeNotifier {
   
   // Get all posts as GuidePost objects
   Future<List<GuidePost>> getPosts() async {
-    if (!_initialized) {
-      await initialize();
-    }
-
-    if (_posts.isEmpty) {
+    print("PostProvider: Getting all posts...");
+     if (_posts.isEmpty && !_isLoading) {
       await fetchPosts();
     }
     
@@ -143,9 +144,9 @@ class PostProvider with ChangeNotifier {
 
   // Fetch all posts
   Future<void> fetchPosts() async {
-    if (!_initialized) {
-      await initialize();
-    }
+    print("PostProvider: Fetching posts...");
+
+    if (_isLoading) return;
 
     _isLoading = true;
     _errorMessage = null;
@@ -157,6 +158,7 @@ class PostProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     } catch (e) {
+      print("PostProvider: Error fetching posts: $e");
       _errorMessage = e.toString();
       _isLoading = false;
       notifyListeners();
@@ -165,9 +167,7 @@ class PostProvider with ChangeNotifier {
 
   // Fetch featured posts
   Future<void> fetchFeaturedPosts() async {
-    if (!_initialized) {
-      await initialize();
-    }
+    print("PostProvider: Fetching featured posts...");
 
     _isLoading = true;
     _errorMessage = null;
@@ -187,9 +187,7 @@ class PostProvider with ChangeNotifier {
 
   // Fetch latest posts
   Future<void> fetchLatestPosts() async {
-    if (!_initialized) {
-      await initialize();
-    }
+    print("PostProvider: Fetching latest posts...");
 
     _isLoading = true;
     _errorMessage = null;
@@ -209,9 +207,7 @@ class PostProvider with ChangeNotifier {
 
   // Fetch posts by game
   Future<void> fetchPostsByGame(String gameId) async {
-    if (!_initialized) {
-      await initialize();
-    }
+    print("PostProvider: Fetching posts by game...");
 
     _isLoading = true;
     _errorMessage = null;
@@ -231,9 +227,7 @@ class PostProvider with ChangeNotifier {
 
   // Fetch post details
   Future<void> fetchPostDetails(String postId) async {
-    if (!_initialized) {
-      await initialize();
-    }
+    print("PostProvider: Fetching post details...");
 
     _isLoading = true;
     _errorMessage = null;
@@ -268,9 +262,6 @@ class PostProvider with ChangeNotifier {
     String authorName,
     String authorAvatarUrl,
   ) async {
-    if (!_initialized) {
-      await initialize();
-    }
 
     _isLoading = true;
     _errorMessage = null;
@@ -319,9 +310,6 @@ class PostProvider with ChangeNotifier {
     String authorName,
     String authorAvatarUrl,
   ) async {
-    if (!_initialized) {
-      await initialize();
-    }
 
     _isLoading = true;
     _errorMessage = null;
@@ -370,10 +358,6 @@ class PostProvider with ChangeNotifier {
 
   // Vote on a post
   Future<bool> votePost(String postId, bool isUpvote) async {
-    if (!_initialized) {
-      await initialize();
-    }
-
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -461,5 +445,75 @@ class PostProvider with ChangeNotifier {
     _selectedPost = null;
     _comments = [];
     notifyListeners();
+  }
+
+  void selectPost(Post post) {}
+
+  downvotePost(String id, String id2) {
+    // Downvote a post
+    final index = _posts.indexWhere((post) => post.id == id);
+    if (index != -1) {
+      _posts[index] = _posts[index].copyWith(
+        downvotes: _posts[index].downvotes + 1,
+      );
+      notifyListeners();
+    }
+  }
+
+  void loadCommentsForPost(String id) {
+    // Load comments for a specific post
+    fetchPostDetails(id);
+  }
+
+  getThreadedComments(String id) {
+    // Fetch threaded comments for a given post ID
+    return _comments.where((comment) => comment.postId == id).toList();
+  }
+
+  createComment(Comment newComment) {
+    // Create a new comment
+    _comments.add(newComment);
+    notifyListeners();
+  }
+
+  void loadPostsForGame(String id) {
+    // Load posts for a specific game
+    fetchPostsByGame(id);
+  }
+
+  List<Post> getLatestPosts() {
+    // Return the latest posts
+    return _latestPosts;
+  }
+
+  List<Post> getHottestPosts() {
+    return _posts.where((post) => post.upvotes > 0).toList();
+  }
+
+  getChildComments(String id) {
+    // Fetch child comments for a given comment ID
+    return _comments.where((comment) => comment.parentCommentId == id).toList();
+  }
+
+  downvoteComment(String id, String id2) {
+    // Downvote a comment
+    final index = _comments.indexWhere((comment) => comment.id == id);
+    if (index != -1) {
+      _comments[index] = _comments[index].copyWith(
+        downvotes: _comments[index].downvotes + 1,
+      );
+      notifyListeners();
+    }
+  }
+
+  upvoteComment(String id, String id2) {
+    // Upvote a comment
+    final index = _comments.indexWhere((comment) => comment.id == id);
+    if (index != -1) {
+      _comments[index] = _comments[index].copyWith(
+        upvotes: _comments[index].upvotes + 1,
+      );
+      notifyListeners();
+    }
   }
 }

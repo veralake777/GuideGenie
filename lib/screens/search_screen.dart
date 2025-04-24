@@ -68,7 +68,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       final gameProvider = Provider.of<GameProvider>(context, listen: false);
       final postProvider = Provider.of<PostProvider>(context, listen: false);
       
-      _searchedGames = gameProvider.searchGames(query);
+      _searchedGames = gameProvider.searchGames(query) as List<Game>;
       _searchedGuides = postProvider.searchGuidePosts(query);
     } catch (e) {
       print('Error searching: $e');

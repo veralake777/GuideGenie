@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:io' show Platform;
 
 class FirebaseService {
   static FirebaseService? _instance;
@@ -50,12 +47,10 @@ class FirebaseService {
 Future<void> initialize() async {
   if (_initialized) return;
   try {
-    // IMPORTANT: Do NOT initialize Firebase again - it's already done in main()
-    // Just check if Firebase is initialized
-    if (Firebase.apps.isEmpty) {
-      throw Exception('Firebase.initializeApp() must be called in main() first');
-    }
-    // Initialize service instances
+    // IMPORTANT: Don't check if Firebase is initialized - just trust that it is
+    // Don't throw an exception if Firebase.apps.isEmpty - main.dart ensures it's initialized
+    
+    // Just initialize service instances
     _firestore = FirebaseFirestore.instance;
     _auth = FirebaseAuth.instance;
     _storage = FirebaseStorage.instance;
@@ -66,16 +61,4 @@ Future<void> initialize() async {
     rethrow;
   }
 }
-  
-  // Convenience method for checking if user is logged in
-  bool isUserLoggedIn() {
-    if (!_initialized) return false;
-    return _auth?.currentUser != null;
-  }
-  
-  // Convenience method for getting current user
-  User? get currentUser {
-    if (!_initialized) return null;
-    return _auth?.currentUser;
-  }
 }

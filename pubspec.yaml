@@ -19,7 +19,7 @@ dependencies:
   http: ^1.3.0
   
   # Firebase
-  firebase_core: ^2.15.1
+  firebase_core: ^2.32.0
   firebase_auth: ^4.17.5
   cloud_firestore: ^4.9.1
   firebase_storage: ^11.6.6
@@ -47,6 +47,8 @@ dependencies:
   intl: ^0.17.0
   crypto: ^3.0.3
   google_fonts: ^6.2.1
+  logger: ^2.5.0
+  logging_flutter: ^3.0.0
 
 dev_dependencies:
   flutter_test:

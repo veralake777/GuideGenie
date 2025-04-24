@@ -54,7 +54,7 @@ class CommentItem extends StatelessWidget {
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   radius: 12,
                   child: Text(
-                    comment.authorName[0].toUpperCase(),
+                    (comment.authorName?.isNotEmpty == true ? comment.authorName![0] : 'A').toUpperCase(),
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).colorScheme.onPrimary,
@@ -63,7 +63,7 @@ class CommentItem extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  comment.authorName,
+                  comment.authorName ?? 'Anonymous',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,

@@ -59,6 +59,10 @@ class Post {
     );
   }
 
+  get mediaUrls => null;
+
+  get commentIds => null;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
