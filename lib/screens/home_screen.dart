@@ -150,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Padding(
-                        padding: const EdgeInsets.only(top: kToolbarHeight + 20),
+                        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + kToolbarHeight + 20,),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

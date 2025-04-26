@@ -88,6 +88,12 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    // Calculate safe area padding
+    final mediaQuery = MediaQuery.of(context);
+    final statusBarHeight = mediaQuery.padding.top;
+    final appBarHeight = kToolbarHeight;
+    final tabBarHeight = 48.0; // Standard height for TabBar
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: UIHelper.gamingAppBar(
@@ -114,8 +120,8 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
             
             Column(
               children: [
-                // Add some space for the AppBar
-                const SizedBox(height: kToolbarHeight + 48), // Account for tab bar
+                // Add proper space for the AppBar including status bar, app bar, and tab bar
+                SizedBox(height: statusBarHeight + appBarHeight + tabBarHeight), 
                 
                 // Search field with neon styling
                 Padding(
