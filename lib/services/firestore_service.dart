@@ -1,192 +1,81 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
-import '../models/game.dart';
-import '../models/guide.dart';
-import '../models/user.dart';
+import '../models/post.dart';
 import '../models/comment.dart';
+import '../models/game.dart';
+import '../models/user.dart' as app_models;
 import 'firebase_service.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseService.instance.firestore;
 
-  // Collection references
-  CollectionReference<Map<String, dynamic>> get _gamesCollection => 
-      _firestore.collection('games');
-  
-  CollectionReference<Map<String, dynamic>> get _guidesCollection => 
-      _firestore.collection('guides');
-  
-  CollectionReference<Map<String, dynamic>> get _usersCollection => 
-      _firestore.collection('users');
-  
-  CollectionReference<Map<String, dynamic>> get _commentsCollection => 
-      _firestore.collection('comments');
+  CollectionReference<Map<String, dynamic>> get _posts => _firestore.collection('posts');
+  CollectionReference<Map<String, dynamic>> get _comments => _firestore.collection('comments');
+  CollectionReference<Map<String, dynamic>> get _games => _firestore.collection('games');
+  CollectionReference<Map<String, dynamic>> get _users => _firestore.collection('users');
 
-  // GAMES
+  // Posts
+  Future<List<Post>> getAllPosts() async {
+    final snapshot = await _posts.orderBy('createdAt', descending: true).get();
+    return snapshot.docs.map((doc) => Post.fromJson({...doc.data(), 'id': doc.id})).toList();
+  }
+
+  Future<List<Post>> getPostsByGame(String gameId) async {
+    final snapshot = await _posts.where('gameId', isEqualTo: gameId).orderBy('createdAt', descending: true).get();
+    return snapshot.docs.map((doc) => Post.fromJson({...doc.data(), 'id': doc.id})).toList();
+  }
+
+  Future<void> createPost(Post post) async {
+    final postMap = post.toJson();
+    postMap.remove('id');
+    await _posts.add(postMap);
+  }
+
+  Future<Post?> getPostById(String id) async {
+    final doc = await _posts.doc(id as String?).get();
+    if (!doc.exists) return null;
+    return Post.fromJson({...doc.data()!, 'id': doc.id});
+  }
+
+  // Comments
+  Future<List<Comment>> getCommentsByPost(String postId) async {
+    final snapshot = await _comments.where('postId', isEqualTo: postId).orderBy('createdAt', descending: true).get();
+    return snapshot.docs.map((doc) => Comment.fromJson({...doc.data(), 'id': doc.id})).toList();
+  }
+
+  Future<void> createComment(Comment comment) async {
+    final commentMap = comment.toJson();
+    commentMap.remove('id');
+    await _comments.add(commentMap);
+  }
+
+  // Games
   Future<List<Game>> getAllGames() async {
-    try {
-      final snapshot = await _gamesCollection.get();
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        return Game.fromMap({...data, 'id': doc.id});
-      }).toList();
-    } catch (e) {
-      debugPrint('Error getting all games: $e');
-      return [];
-    }
+    final snapshot = await _games.get();
+    return snapshot.docs.map((doc) => Game.fromJson({...doc.data(), 'id': doc.id})).toList();
   }
 
   Future<Game?> getGameById(String id) async {
-    try {
-      final doc = await _gamesCollection.doc(id).get();
-      if (!doc.exists) return null;
-      
-      return Game.fromMap({...doc.data()!, 'id': doc.id});
-    } catch (e) {
-      debugPrint('Error getting game by id: $e');
-      return null;
-    }
+    final doc = await _games.doc(id).get();
+    if (!doc.exists) return null;
+    return Game.fromJson({...doc.data()!, 'id': doc.id});
   }
 
-  Future<List<Game>> searchGames(String query) async {
-    try {
-      // Firebase doesn't have direct text search like SQL, 
-      // so we'll get all games and filter in-memory
-      final snapshot = await _gamesCollection.get();
-      final List<Game> games = snapshot.docs.map((doc) {
-        return Game.fromMap({...doc.data(), 'id': doc.id});
-      }).toList();
-      
-      // Filter by name (case insensitive)
-      return games.where((game) => 
-          game.name.toLowerCase().contains(query.toLowerCase())).toList();
-    } catch (e) {
-      debugPrint('Error searching games: $e');
-      return [];
-    }
+  // Users
+  Future<app_models.User?> getUserById(String id) async {
+    final doc = await _users.doc(id).get();
+    if (!doc.exists) return null;
+    return app_models.User.fromJson({...doc.data()!, 'id': doc.id});
   }
 
-  Future<Game> createGame(Game game) async {
-    try {
-      // Remove id as Firestore will generate one
-      final gameMap = game.toMap();
-      gameMap.remove('id');
-
-      // Add to Firestore
-      final docRef = await _gamesCollection.add(gameMap);
-      
-      // Get the new document with the generated ID
-      final newDoc = await docRef.get();
-      return Game.fromMap({...newDoc.data()!, 'id': newDoc.id});
-    } catch (e) {
-      debugPrint('Error creating game: $e');
-      rethrow;
-    }
+  Future<void> createUser(app_models.User user) async {
+    final userMap = user.toJson();
+    userMap.remove('id');
+    await _users.doc(user.id as String?).set(userMap);
   }
 
-  Future<Game?> updateGame(Game game) async {
-    try {
-      final gameId = game.id;
-      final gameMap = game.toMap();
-      gameMap.remove('id'); // Remove id as it's not stored in the document
-      
-      await _gamesCollection.doc(gameId).update(gameMap);
-      
-      return getGameById(gameId);
-    } catch (e) {
-      debugPrint('Error updating game: $e');
-      return null;
-    }
-  }
-
-  Future<bool> deleteGame(String id) async {
-    try {
-      await _gamesCollection.doc(id).delete();
-      return true;
-    } catch (e) {
-      debugPrint('Error deleting game: $e');
-      return false;
-    }
-  }
-
-  // USERS
-  Future<User?> getUserById(String id) async {
-    try {
-      final doc = await _usersCollection.doc(id).get();
-      if (!doc.exists) return null;
-      
-      return User.fromMap({...doc.data()!, 'id': doc.id});
-    } catch (e) {
-      debugPrint('Error getting user by id: $e');
-      return null;
-    }
-  }
-
-  Future<User?> getUserByUsername(String username) async {
-    try {
-      final query = await _usersCollection
-          .where('username', isEqualTo: username)
-          .limit(1)
-          .get();
-      
-      if (query.docs.isEmpty) return null;
-      
-      final doc = query.docs.first;
-      return User.fromMap({...doc.data(), 'id': doc.id});
-    } catch (e) {
-      debugPrint('Error getting user by username: $e');
-      return null;
-    }
-  }
-
-  Future<User> createUser(User user) async {
-    try {
-      // Remove id as Firestore will generate one
-      final userMap = user.toMap();
-      userMap.remove('id');
-
-      // Add to Firestore
-      final docRef = await _usersCollection.add(userMap);
-      
-      // Get the new document with the generated ID
-      final newDoc = await docRef.get();
-      return User.fromMap({...newDoc.data()!, 'id': newDoc.id});
-    } catch (e) {
-      debugPrint('Error creating user: $e');
-      rethrow;
-    }
-  }
-
-  // GUIDES
-  Future<List<Guide>> getGuidesByGame(String gameId) async {
-    try {
-      final snapshot = await _guidesCollection
-          .where('gameId', isEqualTo: gameId)
-          .get();
-      
-      return snapshot.docs.map((doc) {
-        return Guide.fromMap({...doc.data(), 'id': doc.id});
-      }).toList();
-    } catch (e) {
-      debugPrint('Error getting guides by game: $e');
-      return [];
-    }
-  }
-
-  // COMMENTS
-  Future<List<Comment>> getCommentsByGuide(String guideId) async {
-    try {
-      final snapshot = await _commentsCollection
-          .where('guideId', isEqualTo: guideId)
-          .orderBy('createdAt', descending: true)
-          .get();
-      
-      return snapshot.docs.map((doc) {
-        return Comment.fromMap({...doc.data(), 'id': doc.id});
-      }).toList();
-    } catch (e) {
-      debugPrint('Error getting comments by guide: $e');
-      return [];
-    }
+  Future<void> updateUser(app_models.User user) async {
+    final userMap = user.toJson();
+    userMap.remove('id');
+    await _users.doc(user.id as String?).update(userMap);
   }
 }

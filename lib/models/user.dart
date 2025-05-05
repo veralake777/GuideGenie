@@ -35,7 +35,7 @@ class User {
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-      id: map['id'] ?? '',
+      id: map['id'] ?? 0,
       username: map['username'] ?? '',
       email: map['email'] ?? '',
       avatarUrl: map['avatarUrl'],

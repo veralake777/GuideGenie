@@ -25,7 +25,7 @@ class Game {
     this.genre = '',
     this.rating = 0.0,
     this.isFeatured = false,
-    this.postCount = 0,
+    this.postCount = 0
   });
 
   factory Game.fromMap(Map<String, dynamic> map) {

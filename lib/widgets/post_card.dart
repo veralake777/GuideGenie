@@ -1,223 +1,162 @@
-import 'package:flutter/material.dart';
-import 'package:guide_genie/models/post.dart';
-import 'package:guide_genie/utils/constants.dart';
+// lib/widgets/post_card.dart
 
-class PostCard extends StatelessWidget {
-  final Post post;
-  
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class PostCard extends StatefulWidget {
+  final Map<String, dynamic> postData;
+  final String authorName;
+  final String postId;
+
   const PostCard({
-    Key? key,
-    required this.post, required void Function() onTap,
-  }) : super(key: key);
+    super.key,
+    required this.postData,
+    required this.authorName,
+    required this.postId
+  });
+
+  @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  bool isBookmarked = false;
+  bool isUpvoted = false;
+  bool isDownvoted = false;
+
+  Future<void> _handleVote({required bool upvote}) async {
+    if (FirebaseAuth.instance.currentUser == null) return;
+
+    final postId = widget.postData['id'];
+    if (postId == null) return;
+
+    final field = upvote ? 'upvotes' : 'downvotes';
+    final value = (widget.postData[field] ?? 0) + 1;
+
+    setState(() {
+      isUpvoted = upvote;
+      isDownvoted = !upvote;
+    });
+
+    await FirebaseFirestore.instance.collection('posts').doc(postId).update({field: value});
+  }
+
+  void _handleCommentTap() {
+    final postId = widget.postData['id'];
+    if (postId == null) return;
+
+    Navigator.pushNamed(context, '/post', arguments: postId);
+  }
+
+  void _handleBookmark() {
+    setState(() {
+      isBookmarked = !isBookmarked;
+    });
+
+    // Optionally update Firestore bookmark status here
+  }
+
+  void _handleMoreOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) => const SizedBox(height: 100, child: Center(child: Text('More options'))),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          AppConstants.postDetailsRoute,
-          arguments: {'postId': post.id},
-        );
-      },
-      borderRadius: BorderRadius.circular(AppConstants.borderRadiusL),
-      child: Container(
-        width: 280,
-        margin: const EdgeInsets.symmetric(
-          horizontal: AppConstants.paddingS,
-          vertical: AppConstants.paddingS,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusL),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPostHeader(context),
-            Padding(
-              padding: const EdgeInsets.all(AppConstants.paddingM),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPostTitle(),
-                  const SizedBox(height: AppConstants.paddingXS),
-                  _buildPostMetadata(context),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    final post = widget.postData;
+    final theme = Theme.of(context);
+    final preview = (post['content'] as String?)?.substring(0, (post['content'] as String?)?.length.clamp(0, 100) ?? 0) ?? '';
 
-  Widget _buildPostHeader(BuildContext context) {
-    // Get the guide type name and icon
-    final typeName = post.type.toString().split('.').last;
-    final IconData typeIcon = AppConstants.guideTypeIcons[typeName] ?? Icons.article;
-    
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppConstants.paddingM,
-      ),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Column(
         children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundImage: NetworkImage(post.authorAvatarUrl),
-            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-            onBackgroundImageError: (exception, stackTrace) {
-              // Handle image loading error
-            },
-            child: post.authorAvatarUrl.isEmpty 
-                ? Text(post.authorName[0], style: TextStyle(color: Theme.of(context).colorScheme.primary))
-                : null,
-          ),
-          const SizedBox(width: AppConstants.paddingS),
-          Expanded(
-            child: Text(
-              post.authorName,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: AppConstants.fontSizeS,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppConstants.paddingS,
-              vertical: 2,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(AppConstants.borderRadiusS),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  typeIcon,
-                  size: AppConstants.iconSizeS,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  AppConstants.guideTypeNames[typeName] ?? typeName,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPostTitle() {
-    return Text(
-      post.title,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: AppConstants.fontSizeM,
-        height: 1.3,
-      ),
-    );
-  }
-
-  Widget _buildPostMetadata(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Game name
-        Expanded(
-          child: Row(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.videogame_asset,
-                size: AppConstants.iconSizeS,
-                color: Colors.grey,
+              // Left vote column
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_upward,
+                          color: isUpvoted ? Colors.purpleAccent : Colors.grey),
+                      onPressed: () => _handleVote(upvote: true),
+                    ),
+                    Text('${post['upvotes'] ?? 0}'),
+                    IconButton(
+                      icon: Icon(Icons.arrow_downward,
+                          color: isDownvoted ? Colors.redAccent : Colors.grey),
+                      onPressed: () => _handleVote(upvote: false),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 4),
+
+              // Right main content
               Expanded(
-                child: Text(
-                  post.gameName,
-                  style: const TextStyle(
-                    fontSize: AppConstants.fontSizeS,
-                    color: Colors.grey,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Meta
+                      Row(
+                        children: [
+                          Text('u/${widget.authorName}', style: theme.textTheme.labelMedium),
+                          const SizedBox(width: 8),
+                          Text('• ${post['createdAt']?.toDate().toLocal().toString().split(' ').first ?? 'now'}',
+                              style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey)),
+                          const Spacer(),
+                          IconButton(
+                            onPressed: _handleMoreOptions,
+                            icon: const Icon(Icons.more_horiz, size: 20),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      // Title
+                      Text(post['title'] ?? '', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+
+                      const SizedBox(height: 4),
+
+                      // Preview
+                      Text(preview, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[700])),
+
+                      const SizedBox(height: 8),
+
+                      // Action bar
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.comment_outlined),
+                            onPressed: _handleCommentTap,
+                          ),
+                          Text('${post['commentCount'] ?? 0}'),
+                          const SizedBox(width: 16),
+                          IconButton(
+                            icon: Icon(
+                              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                            ),
+                            onPressed: _handleBookmark,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-        ),
-        const SizedBox(width: AppConstants.paddingS),
-        // Likes
-        Row(
-          children: [
-            const Icon(
-              Icons.thumb_up,
-              size: AppConstants.iconSizeS,
-              color: Colors.grey,
-            ),
-            const SizedBox(width: 2),
-            Text(
-              post.upvotes.toString(),
-              style: const TextStyle(
-                fontSize: AppConstants.fontSizeS,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(width: AppConstants.paddingS),
-        // Comments
-        Row(
-          children: [
-            const Icon(
-              Icons.comment,
-              size: AppConstants.iconSizeS,
-              color: Colors.grey,
-            ),
-            const SizedBox(width: 2),
-            Text(
-              post.commentCount.toString(),
-              style: const TextStyle(
-                fontSize: AppConstants.fontSizeS,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

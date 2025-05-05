@@ -1,31 +1,27 @@
 class Comment {
   final String id;
-  final String guideId;
-  final String userId;
   final String postId;
   final String content;
   final int upvotes;
   final int downvotes;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String? authorName;
+  final int authorId;
+  final String authorName;
   final String? authorAvatar;
-  final String? authorId;
   final String? authorAvatarUrl;
   final String? parentCommentId;
   final List<String> childCommentIds;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Comment({
     required this.id,
-    required this.content,
-    this.guideId = '',
-    this.userId = '',
     required this.postId,
+    required this.content,
     this.upvotes = 0,
     this.downvotes = 0,
-    this.authorName,
+    required this.authorId,
+    required this.authorName,
     this.authorAvatar,
-    this.authorId,
     this.authorAvatarUrl,
     this.parentCommentId,
     this.childCommentIds = const [],
@@ -38,8 +34,6 @@ class Comment {
   factory Comment.fromMap(Map<String, dynamic> map) {
     return Comment(
       id: map['id'] ?? '',
-      guideId: map['guideId'] ?? '',
-      userId: map['userId'] ?? '',
       postId: map['postId'] ?? '',
       content: map['content'] ?? '',
       upvotes: map['upvotes'] ?? 0,
@@ -71,8 +65,6 @@ class Comment {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'guideId': guideId,
-      'userId': userId,
       'postId': postId,
       'content': content,
       'upvotes': upvotes,
@@ -93,15 +85,13 @@ class Comment {
 
   Comment copyWith({
     String? id,
-    String? guideId,
-    String? userId,
     String? postId,
     String? content,
     int? upvotes,
     int? downvotes,
     String? authorName,
     String? authorAvatar,
-    String? authorId,
+    int? authorId,
     String? authorAvatarUrl,
     String? parentCommentId,
     List<String>? childCommentIds,
@@ -110,8 +100,6 @@ class Comment {
   }) {
     return Comment(
       id: id ?? this.id,
-      guideId: guideId ?? this.guideId,
-      userId: userId ?? this.userId,
       postId: postId ?? this.postId,
       content: content ?? this.content,
       upvotes: upvotes ?? this.upvotes,
